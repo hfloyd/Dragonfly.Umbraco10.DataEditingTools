@@ -1,0 +1,388 @@
+@using System.Web.Mvc.Html
+@using Dragonfly.DataEditingTools
+@using Dragonfly.DataEditingTools.Models
+@using Dragonfly.NetModels;
+@using Newtonsoft.Json
+
+
+@inherits Umbraco.Web.Mvc.UmbracoViewPage<StatusMessage>
+
+@{
+    var status = Model;
+
+    var SpecialMessage = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessage");
+    var SpecialMessageClass = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessageClass");
+
+    var SelectedType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedType");
+    var FormInputs = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "FormInputs") as FormInputsPropertyToProperty;
+    var AffectedNodes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AffectedNodes");
+    var Results = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "Results") as PropToPropResultsSet;
+
+    //Content or Media?
+    var nodesType = FormInputs.NodeTypes;
+
+    IContentType selectedDocType;
+    IMediaType selectedMediaType;
+
+    List<IContent> affectedContentNodes = new List<IContent>();
+    List<IMedia> affectedMediaNodes = new List<IMedia>();
+
+    var selectedTypeName = "";
+    var selectedTypeAlias = "";
+    var selectedTypeIsElement = false;
+    int affectedNodesCount = 0;
+
+    if (nodesType == Enums.NodeType.Content)
+    {
+        selectedDocType = SelectedType as IContentType;
+        selectedTypeName = selectedDocType.Name;
+        selectedTypeAlias = selectedDocType.Alias;
+        selectedTypeIsElement = selectedDocType.IsElement;
+
+        affectedContentNodes =AffectedNodes as List<IContent>;
+        affectedNodesCount = affectedContentNodes!=null ? affectedContentNodes.Count:0;
+    }
+    else if (nodesType == Enums.NodeType.Media)
+    {
+        selectedMediaType = SelectedType as IMediaType;
+        selectedTypeName = selectedMediaType.Name;
+        selectedTypeAlias = selectedMediaType.Alias;
+        selectedTypeIsElement = selectedMediaType.IsElement;
+
+        var nodes = AffectedNodes as IEnumerable<IMedia>;
+        affectedMediaNodes = nodes.ToList();
+        affectedNodesCount = affectedMediaNodes!=null ? affectedMediaNodes.Count:0;
+    }
+
+
+    var propertyAliases = FormInputs.AvailablePropertiesCSV.Split(',').ToList();
+
+    //Column Widths
+    var col1Class = "col-sm-3";
+    var col2Class = "col-sm-9";
+
+    var pvException = ViewHelpers.GetViewsPath() + "Partials/ExceptionDetailsLink.cshtml";
+    var pvSS = ViewHelpers.GetViewsPath() + "Partials/StylesScripts.cshtml";
+    var pvStatus = ViewHelpers.GetViewsPath() + "Partials/StatusMessage.cshtml";
+    var pvFormPropToProp = ViewHelpers.GetViewsPath() + "Partials/FormPropToProp.cshtml";
+    //var pvFormReplaceWithUdis = ViewHelpers.GetViewsPath() + "Partials/FormReplaceWithUdis.cshtml";
+
+    var mode = "Setup";
+    if (FormInputs.PropertyAliasFrom != "" && FormInputs.PropertyAliasTo != "")
+    {
+        mode = "Display";
+    }
+
+    var customMigClass = FormInputs.CustomTransformationClass;
+    var typeDescription = !string.IsNullOrEmpty(customMigClass) ? FormInputs.PropToPropTypeOption.ToString() + " : " + customMigClass : FormInputs.PropToPropTypeOption.ToString();
+
+}
+<!DOCTYPE html>
+<html>
+<head>
+    @Html.Partial(pvSS, "styles")
+</head>
+<body>
+    <div class="container-fluid">
+
+        <div class="d-inline-flex p-2" style="padding: .5em 0;">
+            <a class="btn btn-sm btn-primary mr-2" href="/Umbraco/backoffice/Api/TransformationHelperApi/Start">Back to Start</a>
+            @*<a class="btn btn-sm btn-info mr-2" href="@baseUrl">Remove All Filters</a>*@
+            @*<a class="btn btn-sm btn-success mr-2" href="xx">XX</a>*@
+        </div>
+
+        <h1>Dragonfly Transformation 7 to 8 Helpers</h1>
+
+        @if (!status.Success)
+        {
+            @Html.Partial(pvStatus, status)
+        }
+        else
+        {
+            if (SpecialMessage != "")
+            {
+                <div class="p-3 mb-2 @SpecialMessageClass">
+                    @Html.Raw(SpecialMessage)
+                </div>
+            }
+        }
+
+        <h2>Transfer @nodesType.ToString() Node Property Data to Another Property</h2>
+        <p>This is most useful when you have an old-format data property and a new (empty) new format data property and need to copy current data to the new property.</p>
+        <div class="card card-default">
+            <h5 class="card-header">Criteria</h5>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="@col1Class">@nodesType.ToString() Type</dt>
+                    <dd class="@col2Class">@selectedTypeName (@selectedTypeAlias)</dd>
+                </dl>
+                <dl class="row">
+                    <dt class="@col1Class">From Property Alias</dt>
+                    <dd class="@col2Class">@FormInputs.PropertyAliasFrom</dd>
+                </dl>
+                <dl class="row">
+                    <dt class="@col1Class">To Property Alias</dt>
+                    <dd class="@col2Class">@FormInputs.PropertyAliasTo</dd>
+                </dl>
+                <dl class="row">
+                    <dt class="@col1Class">Type</dt>
+                    <dd class="@col2Class">@typeDescription</dd>
+                </dl>
+                <dl class="row">
+                    <dt class="@col1Class">Overwrite Existing Data?</dt>
+                    <dd class="@col2Class">@FormInputs.OverwriteExistingData</dd>
+                </dl>
+                <dl class="row">
+                    <dt class="@col1Class">Number of Affected Nodes</dt>
+                    <dd class="@col2Class">@affectedNodesCount</dd>
+                </dl>
+
+                @if (selectedTypeIsElement)
+                {
+                    var otherDataTypes = ViewHelpers.GetNestedContentDataTypes(selectedTypeAlias);
+                    <p>
+                        <i>
+                            <b> NOTE:</b> This is an Element Type. There won't be Nodes of this Type.
+                            <br />Try:
+                        </i>
+                        <ul>
+                            @foreach (var dt in otherDataTypes)
+                            {
+                                var urlRelatedDataType = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/StartDataType?DataTypeId={0}", dt.Id.ToString());
+                                <li> <a href="@urlRelatedDataType">@dt.Name</a></li>
+                            }
+                        </ul>
+                    </p>
+                }
+            </div>
+        </div>
+
+        @if (mode != "Setup")
+        {
+            if (!Results.DataUpdatedAndSaved)
+            {
+                <h3>PREVIEW of @nodesType.ToString() Nodes Changes</h3>
+            }
+            else
+            {
+                <h3>@nodesType.ToString() Nodes UPDATED</h3>
+            }
+
+            if (Results.Results.Any())
+            {
+                var counter = 0;
+                <table id="umbracodata" class="table table-striped table-bordered table-hover table-sm" cellspacing="0" style="max-width: 1600px !important;">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Node Id</th>
+                            <th>Node Name</th>
+                            @if (nodesType == Enums.NodeType.Content)
+                            {
+                                <th>Node Is Published</th>
+                            }
+                            <th>From Property Value</th>
+                            <th>Valid?</th>
+                            <th>To Property Value</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (nodesType == Enums.NodeType.Content)
+                        {
+                            foreach (var result in Results.Results)
+                            {
+                                var node = result.ContentNode;
+                                var urlBackoffice = string.Format("/umbraco/#/content/content/edit/{0}", node.Id.ToString());
+
+                                counter++;
+                                var rowClass = result.ContentUpdated == true ? "table-success" : "";
+
+                                <tr class="@rowClass">
+                                    <td>@counter</td>
+                                    <td><a href="@urlBackoffice" target="_blank">@node.Id</a></td>
+                                    <td>@node.Name</td>
+                                    <td>@node.Published</td>
+                                    <td>@result.PropertyFromData</td>
+                                    <td>@result.ValidToTransfer</td>
+                                    <td>@result.PropertyToData</td>
+                                    <td>@result.Status</td>
+                                </tr>
+                            }
+                        }
+                        else if (nodesType == Enums.NodeType.Media)
+                        {
+                            foreach (var result in Results.Results)
+                            {
+                                var node = result.MediaNode;
+                                var urlBackoffice = string.Format("/umbraco/#/media/media/edit/{0}", node.Id.ToString());
+
+                                counter++;
+                                var rowClass = result.ContentUpdated == true ? "table-success" : "";
+
+                                <tr class="@rowClass">
+                                    <td>@counter</td>
+                                    <td><a href="@urlBackoffice" target="_blank">@node.Id</a></td>
+                                    <td>@node.Name</td>
+                                    <td>@result.PropertyFromData</td>
+                                    <td>@result.ValidToTransfer</td>
+                                    <td>@result.PropertyToData</td>
+                                    <td>@result.Status</td>
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <i style="color:red;">There is no data available currently.</i>
+            }
+
+        }
+
+        @Html.Partial(pvFormPropToProp, FormInputs)
+
+        @if (mode == "Setup")
+        {
+            <h3 class="mt-2">Affected Nodes - Examples of Existing Property Data for Reference</h3>
+            if (affectedNodesCount > 0)
+            {
+                if (nodesType == Enums.NodeType.Content)
+                {
+                    @RenderContentNodesTable(affectedContentNodes, propertyAliases)
+                }
+                else if (nodesType == Enums.NodeType.Media)
+                {
+                    @RenderMediaNodesTable(affectedMediaNodes, propertyAliases)
+                }
+            }
+            else
+            {
+                <i style="color: red;">There is no data available currently.</i>
+            }
+        }
+
+    </div>
+
+    @Html.Partial(pvSS, "scripts")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Setup - add a text input to each footer cell
+            $('#umbracodata tfoot th').each(function () {
+                var title = $(this).text();
+                $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+            });
+
+            $('#umbracodata').DataTable({
+                "lengthMenu": [[10, 25, 50, - 1], [10, 25, 50, "All"]]
+            });
+            74
+            // Apply the search
+            table.columns().every(function () {
+                var that = this;
+
+                $('input', this.footer()).on('keyup change', function () {
+                    if (that.search() !== this.value) {
+                        that
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
+
+@helper RenderContentNodesTable(IEnumerable<IContent> Nodes,IEnumerable<string> PropertyAliases)
+    {
+    var counter = 0;
+    <table id="umbracodata" class="table table-striped table-bordered table-hover table-sm" cellspacing="0" style="width: 100%">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Actions</th>
+                <th>Node Id</th>
+                <th>Node Name</th>
+                <th>Node Is Published</th>
+                <th>Property Alias</th>
+                <th>Property Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var node in Nodes)
+            {
+                var propsData = node.Properties.Where(n => PropertyAliases.Contains(n.Alias));
+
+                foreach (var propertyData in propsData)
+                {
+                    counter++;
+
+                    <tr>
+                        <td>@counter</td>
+                        <td>
+                            <a href="/umbraco/#/content/content/edit/@node.Id" target="_blank">Edit in Umbraco</a>
+                        </td>
+                        <td>@node.Id</td>
+                        <td>@node.Name</td>
+                        <td>@node.Published</td>
+                        <td>@propertyData.Alias</td>
+                        <td>@propertyData.GetValue()</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    }
+
+    @helper RenderMediaNodesTable(IEnumerable<IMedia> Nodes,IEnumerable<string> PropertyAliases)
+        {
+        var counter = 0;
+        <table id="umbracodata" class="table table-striped table-bordered table-hover table-sm" cellspacing="0" style="width: 100%">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Actions</th>
+                    <th>Node Id</th>
+                    <th>Node Name</th>
+                  <th>Property Alias</th>
+                    <th>Property Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var node in Nodes)
+                {
+                    var propsData = node.Properties.Where(n => PropertyAliases.Contains(n.Alias));
+
+                    foreach (var propertyData in propsData)
+                    {
+                        counter++;
+
+                        <tr>
+                            <td>@counter</td>
+                            <td>
+                                <a href="/umbraco/#/content/content/edit/@node.Id" target="_blank">Edit in Umbraco</a>
+                            </td>
+                            <td>@node.Id</td>
+                            <td>@node.Name</td>
+                            <td>@propertyData.Alias</td>
+                            <td>@propertyData.GetValue()</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        }
+    
+@functions{
+
+
+
+}

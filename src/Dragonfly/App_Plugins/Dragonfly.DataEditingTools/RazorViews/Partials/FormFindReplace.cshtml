@@ -1,0 +1,60 @@
+@using Dragonfly.DataEditingTools
+@using Dragonfly.DataEditingTools.Models
+
+@inherits UmbracoViewPage<FormInputsFindReplace>
+
+@{
+    var typesDict = Enums.FindReplaceTypesWithDisplayText();
+    var frTypeOptions = Enums.FindReplaceTypesSelectList();
+
+    var frClassOptions = ViewHelpers.CustomFindReplaceTransformersAllClassesSelectList("", "-- SELECT CUSTOM Transformer HERE --", "(No Custom Transformers Available)");
+}
+
+<div class="card card-default mt-2">
+    <h3 class="card-header">Find & Replace Options</h3>
+    <div class="card-body">
+
+        <form action="/Umbraco/backoffice/Api/TransformationHelperApi/FindReplace" method="post">
+            @Html.HiddenFor(f => f.ContentNodeIdsCsv)
+            @Html.HiddenFor(f => f.PropertyAliasesCsv)
+            <div class="form-group">
+                <label for="TypeOption">Type</label>
+                <div class="d-inline-flex p-3" style="padding: .5em 0;">
+                    @Html.DropDownListFor(f => f.FindReplaceTypeOption, frTypeOptions, new { @class = "form-control mr-2" })
+                    @Html.DropDownListFor(f => f.CustomTransformationClass, frClassOptions, new { @class = "form-control mr-2" }) 
+                </div>
+                <small id="TypeOptionHelp" class="form-text text-muted">
+                    The type of Replacement you want to make:
+                    <ul>
+                        <li><b>Simple Text-to-Text</b> - an exact replacement of the entered text options</li>
+                        <li>
+                            <b>Replace Integer Ids with UDIs</b> - To update Node IDs with UDIs inside of data (for example - in the case of Nested Content or other JSON), select this option and use the following syntax for your text options:
+                            <ul>
+                                <li>Find: Use '~ID~' to indicate the Integer (ex: "imageProp": "~ID~")</li>
+                                <li>Replacement: Use '~UDI~' to indicate where the UDI should be placed (ex: "imageProp": "~UDI~") </li>
+                            </ul>
+                        </li>
+                        <li><b>Custom Transformation</b> - use custom Transformation code (implementing interface ICustomFindReplaceDataTransformer)</li>
+                    </ul>
+                </small>
+            </div>
+            <div class="form-group">
+                <label for="Find">Find phrase</label>
+                @Html.TextBoxFor(f => f.Find, new { @class = "form-control" })
+                <small id="FindHelp" class="form-text text-muted">Search will be an exact match.</small>
+            </div>
+            <div class="form-group">
+                <label for="Replace">Replacement phrase</label>
+                @Html.TextBoxFor(f => f.Replace, new { @class = "form-control" })
+                <small id="ReplaceHelp" class="form-text text-muted">The entire 'Find' phrase will be replaced with the Replacement phrase.</small>
+            </div>
+            <div class="form-group">
+                <label for="PreviewOnly">Preview Only?</label>
+                @Html.CheckBoxFor(f => f.PreviewOnly)
+                <small id="PreviewOnlyHelp" class="form-text text-muted">Just show what would be affected, without saving the changes to Content.</small>
+            </div>
+            <button class="btn btn-primary" value="Submit" type="Submit">Do it!</button>
+        </form>
+
+    </div>
+</div>

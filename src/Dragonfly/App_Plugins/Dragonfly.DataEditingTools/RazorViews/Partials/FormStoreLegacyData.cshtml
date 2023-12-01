@@ -1,0 +1,46 @@
+@using Dragonfly.DataEditingTools
+@using Dragonfly.DataEditingTools.Models
+
+@inherits UmbracoViewPage<FormInputsStoreLegacyData>
+
+@{
+    var propsContent = Model.AvailableContentPropertiesCSV.Split(',').ToList().OrderBy(n=> n).ToList();
+    var contentPropOptions = new SelectList(propsContent);
+
+    var propsMedia = Model.AvailableMediaPropertiesCSV.Split(',').ToList().OrderBy(n=> n).ToList();
+    var mediaPropOptions = new SelectList(propsMedia);
+}
+
+<div class="card card-default mt-2">
+    <h3 class="card-header">Find & Replace Options</h3>
+    <div class="card-body">
+
+        <form action="/Umbraco/backoffice/Api/TransformationHelperApi/DoStoreLegacyData" method="post">
+            @Html.HiddenFor(f => f.AvailableMediaPropertiesCSV)
+            @Html.HiddenFor(f => f.AvailableContentPropertiesCSV)
+            @*@Html.HiddenFor(f=> f.)*@
+            <div class="form-group">
+                <label for="PropFrom">Content Property to store Legacy Id</label>
+                @Html.DropDownListFor(f => f.PropertyAliasContentNodeId, contentPropOptions, "", new { @class = "form-control" })
+                @*<small id="PropFromHelp" class="form-text text-muted">???</small>*@
+            </div>
+            <div class="form-group">
+                <label for="PropTo">Media Property to store Legacy Id</label>
+                @Html.DropDownListFor(f => f.PropertyAliasMediaNodeId, mediaPropOptions, "", new { @class = "form-control" })
+                @*<small id="PropToHelp" class="form-text text-muted">???</small>*@
+            </div>
+            <div class="form-group">
+                <label for="PreviewOnly">Preview Only?</label>
+                @Html.CheckBoxFor(f => f.PreviewOnly)
+                <small id="PreviewOnlyHelp" class="form-text text-muted">Just show what would be affected, without saving the changes to nodes.</small>
+            </div>
+            <div class="form-group">
+                <label for="OverWrite">Overwrite Existing Data?</label>
+                @Html.CheckBoxFor(f => f.OverwriteExistingData)
+                <small id="OverWriteHelp" class="form-text text-muted">If there is already a value in the Legacy Data property, overwrite it?</small>
+            </div>
+            <button class="btn btn-primary" value="Submit" type="Submit">Do it!</button>
+        </form>
+
+    </div>
+</div>

@@ -1,0 +1,35 @@
+@using Dragonfly.DataEditingTools;
+@using Dragonfly.DataEditingTools.Models;
+@using Umbraco.Web;
+
+@inherits UmbracoViewPage<FormInputsUdiLookup>
+
+@{
+    var typeOptions = Enums.UmbracoObjectTypesSelectList();
+}
+
+<div class="card card-default mt-2">
+    <h3 class="card-header">Lookup Options</h3>
+    <div class="card-body">
+
+        <form action="/Umbraco/backoffice/Api/TransformationHelperApi/LookupUdi" method="post">
+            <div class="form-group">
+                <label for="Udi">Udi</label>
+                @Html.TextBoxFor(f => f.Udi, new { @class = "form-control" })
+                <small id="UdiHelp" class="form-text text-muted">a Udi is in the format "umb://TYPE/GUID" if you don't have a UDI, use the next two options instead</small>
+            </div>
+            <p>OR</p>
+            <div class="form-group">
+                <label for="TypeOption">Type & GUID</label>
+                <div class="d-inline-flex p-2" style="padding: .5em 0;">
+                    @Html.DropDownListFor(f => f.ObjectType, typeOptions, new { @class = "form-control mr-2" })
+                    @Html.TextBoxFor(f => f.Guid, new { @class = "form-control", placeholder="GUID here"}) 
+                    </div>
+                @*<small id="TypeOptionHelp" class="form-text text-muted">???</small>*@
+            </div>
+         
+            <button class="btn btn-primary" value="Submit" type="Submit">Lookup</button>
+        </form>
+
+    </div>
+</div>

@@ -1,0 +1,164 @@
+@using System.Web.Mvc.Html
+@using Dragonfly.DataEditingTools
+@using Dragonfly.DataEditingTools.Models
+@using Dragonfly.NetModels;
+@using Newtonsoft.Json
+@using Umbraco.Web.PropertyEditors
+
+@inherits UmbracoViewPage<StatusMessage>
+
+@{
+    var status = Model;
+
+    var SpecialMessage = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessage");
+    var SpecialMessageClass = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessageClass");
+    var SelectedDataType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedDataType") as IDataType;
+    var RelatedProperties = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "RelatedProperties") as IEnumerable<DocTypeProperty>;
+
+    var pvSS = ViewHelpers.GetViewsPath() + "Partials/StylesScripts.cshtml";
+    var pvStatus = ViewHelpers.GetViewsPath() + "Partials/StatusMessage.cshtml";
+    var pvFilesList = ViewHelpers.GetViewsPath() + "Partials/FilesList.cshtml";
+
+    var urlBackofficeMain = string.Format("/umbraco#/settings/dataTypes/edit/{0}", SelectedDataType.Id);
+
+
+    //Column Widths for Cards
+    var col1Class = "col-sm-3";
+    var col2Class = "col-sm-9";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    @Html.Partial(pvSS, "styles")
+</head>
+<body>
+    <div class="container">
+
+        <div class="d-inline-flex p-2" style="padding: .5em 0;">
+            <a class="btn btn-sm btn-primary mr-2" href="/Umbraco/backoffice/Api/TransformationHelperApi/Start">Back to Start</a>
+            @*<a class="btn btn-sm btn-info mr-2" href="@baseUrl">Remove All Filters</a>*@
+            @*<a class="btn btn-sm btn-success mr-2" href="xx">XX</a>*@
+        </div>
+
+        <h1>Dragonfly Transformation 7 to 8 Helpers</h1>
+        @if (!status.Success)
+        {
+            @Html.Partial(pvStatus, status)
+        }
+        else
+        {
+            if (SpecialMessage != "")
+            {
+                <div class="p-3 mb-2 @SpecialMessageClass text-white">
+                    @Html.Raw(SpecialMessage)
+                </div>
+            }
+        }
+
+        <h2>Edit Data By Data Type</h2>
+
+        <div class="card card-default">
+            <h5 class="card-header">@SelectedDataType.Name</h5>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="@col1Class">ID / GUID</dt>
+                    <dd class="@col2Class">@SelectedDataType.Id / @SelectedDataType.Key</dd>
+                </dl>
+                <dl class="row">
+                    <dt class="@col1Class">Database Type</dt>
+                    <dd class="@col2Class">@SelectedDataType.DatabaseType</dd>
+                </dl>
+                <dl class="row">
+                    <dt class="@col1Class">Property Editor</dt>
+                    <dd class="@col2Class">@SelectedDataType.EditorAlias</dd>
+                </dl>
+                <dl class="row">
+                    <dt class="@col1Class">Configuration Type</dt>
+                    <dd class="@col2Class">@SelectedDataType.Configuration.GetType()</dd>
+                </dl>
+                <dl class="row">
+                    <dt class="@col1Class">Configuration JSON</dt>
+                    <dd class="@col2Class">@JsonConvert.SerializeObject(SelectedDataType.Configuration)</dd>
+                </dl>
+                <a class="btn btn-sm btn-success mr-2" href="@urlBackofficeMain" target="_blank">Edit this DataType in the Back-office</a>
+                @if (SelectedDataType.EditorAlias == "Umbraco.NestedContent")
+                {
+                    //var innerProps = ViewHelpers.GetPropertiesOnNestedContent(SelectedDataType);
+                    var config = SelectedDataType.Configuration as NestedContentConfiguration;
+                    var docTypes = config.ContentTypes;
+                    <div>
+                        <i>Edit Nested Content DocTypes in the Back-office:</i>
+                        @foreach (var info in docTypes)
+                        {
+                            try
+                            {
+                                var thisDocType = Services.ContentTypeService.Get(info.Alias);
+                                var urlDocType = string.Format("/umbraco/#/settings/documentTypes/edit/{0}", thisDocType.Id);
+                                <a class="btn btn-sm btn-success mr-2" href="@urlDocType" target="_blank">@thisDocType.Name</a>
+                            }
+                            catch (Exception e)
+                            {
+                                <div class="alert alert-danger" role="alert">
+                                    Invalid ContentType in config: @info.Alias [@info.TabAlias]
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+
+        </div>
+
+        <h3 class="mt-2"> Drill-down: DocTypes and Properties</h3>
+        @if (RelatedProperties != null)
+        {
+            var doctypeGroups = new GroupingCollection<DocTypeProperty>(RelatedProperties);
+            doctypeGroups.GroupItems(n => n.DocTypeAlias);
+
+            <ul>
+                @foreach (var docType in doctypeGroups.Groups)
+                {
+                    var docTypeAlias = docType.GroupName["Key"].ToString();
+                    var docTypeDetails = Services.ContentTypeService.Get(docTypeAlias);
+                    var urlReplace = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/SetupReplaceInData?DocTypeAlias={0}&DataTypeId={1}", docTypeAlias, SelectedDataType.Id);
+                    var urlBackoffice = string.Format("/umbraco#/settings/documentTypes/edit/{0}", docTypeDetails.Id.ToString());
+                    var urlStartDocType = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/StartDocType?DocTypeId={0}", docTypeDetails.Id);
+                    <li>
+                        <b>@docTypeDetails.Name (@docTypeAlias)</b>
+                        <br />
+                        <a class="btn btn-sm btn-success mr-2" href="@urlBackoffice" target="_blank">Edit this DocType in the Back-office</a>
+                        <a class="btn btn-sm btn-success mr-2" href="@urlStartDocType" target="_blank">Work with this DocType</a>
+                        <a class="btn btn-sm btn-success mr-2" href="@urlReplace" target="_blank">Find/Replace Data in this DocType/DataType</a>
+                  
+                        <p class="mt-1"><i>Properties matching DataType:</i></p>
+                        <ul>
+                            @foreach (var prop in docType.Collection.OrderBy(n => n.Property.Alias))
+                            {
+                                var thisDataType = Services.DataTypeService.GetDataType(prop.Property.DataTypeId);
+                                <li>
+                                    @prop.Property.Name (@prop.Property.Alias)
+                                    <br />DataType: @thisDataType.Name
+                                    <br />
+                                    <!-- <a class="btn btn-sm btn-success mr-2 btn-disabled" href="#">Fix Data in this Property</a>-->
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                }
+            </ul>
+        }
+
+        @*<div class="d-inline-flex p-2" style="padding: .5em 0;">
+                <a class="btn btn-sm btn-success mr-2" href="/Umbraco/backoffice/Api/SiteTesterApi/TestAllNodesAndSave">Test All Nodes Now</a>
+            </div>
+            <div class="d-inline-flex p-2" style="padding: .5em 0;">
+                <a class="btn btn-sm btn-success mr-2" href="/Umbraco/backoffice/Api/SiteTesterApi/TestDescendantNodesAndSave?StartNode=0">Test Subset of Nodes...</a>
+            </div>*@
+
+
+    </div>
+
+    @*@Html.Partial(pvSS, "scripts")*@
+</body>
+</html>
+

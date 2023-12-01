@@ -1,0 +1,104 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<MvcRazorCompileOnPublish>false</MvcRazorCompileOnPublish>
+		<ContentTargetFolders>content</ContentTargetFolders>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
+
+	<!-- Package Description-->
+	<PropertyGroup>
+		<PackageId>Dragonfly.Umbraco10.DataEditingTools</PackageId>
+		<Title>Dragonfly Umbraco 10 Data Editing Tools</Title>
+		<Product>Dragonfly Umbraco 10 Data Editing Tools</Product>
+		<Description>Data cleaning/conversion tools for Umbraco 10+</Description>
+
+		<PackageProjectUrl>https://DragonflyLibraries.com/umbraco-packages/data-editing-tools/</PackageProjectUrl>
+		<RepositoryType>GIT</RepositoryType>
+		<RepositoryUrl>https://github.com/hfloyd/Dragonfly.Umbraco10.DataEditingTools</RepositoryUrl>
+
+		<PackageIcon></PackageIcon>
+		<PackageTags>Umbraco;Umbraco-10;Umbraco-11</PackageTags>
+		<PackageReleaseNotes>Pre-release</PackageReleaseNotes>
+	</PropertyGroup>
+
+	<!-- Author Info + Legal-->
+	<PropertyGroup>
+		<Authors>HFloyd</Authors>
+		<Company>Heather Floyd</Company>
+		<Copyright>Heather Floyd [www.HeatherFloyd.com]</Copyright>
+
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+	</PropertyGroup>
+
+
+	<!-- Assembly Info-->
+	<PropertyGroup>
+		<RootNamespace>Dragonfly</RootNamespace>
+		<AssemblyName>Dragonfly.DataEditingTools</AssemblyName>
+		<Version>0.1.0</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>symbols.nupkg</SymbolPackageFormat>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<!-- Include Package Items -->
+	<ItemGroup>
+		<!--<None Include="..\..\Icon.png">
+     <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  -->
+		<None Include="..\..\LICENSE.md">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<!-- Packages-->
+	<ItemGroup>
+		<PackageReference Include="Dragonfly.Net5" Version="1.5.0" />
+		<PackageReference Include="Dragonfly.Umbraco9" Version="1.5.0" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[10.0.1,13.0.0]" />
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.0.1,13.0.0]" PrivateAssets="All" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.0.1,13.0.0]" PrivateAssets="All" />
+
+	</ItemGroup>
+
+
+	<!--Include App_Plugins & targets file-->
+	<ItemGroup>
+		<Content Include="App_Plugins\Dragonfly.DataEditingTools\**\*.*">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<Pack>True</Pack>
+		</Content>
+		<None Include="build\**\*.*">
+			<Pack>True</Pack>
+			<PackagePath>buildTransitive</PackagePath>
+		</None>
+	</ItemGroup>
+
+
+
+	<!-- Included/Excluded Files -->
+	<ItemGroup>
+		<Compile Remove="~Custom Transformer Samples\**" />
+		<EmbeddedResource Remove="~Custom Transformer Samples\**" />
+		<None Remove="~Custom Transformer Samples\**" />
+	</ItemGroup>
+
+	<Import Project="..\Custom.targets" />
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Exec Command="REM XCOPY /s /y &quot;$(TargetDir)$(TargetName)*.*&quot; &quot;\bin\&quot;&#xD;&#xA;REM XCOPY /y &quot;$(TargetDir)$(TargetName)*.*&quot; &quot;XXX\bin\&quot;" />
+	</Target>
+</Project>
