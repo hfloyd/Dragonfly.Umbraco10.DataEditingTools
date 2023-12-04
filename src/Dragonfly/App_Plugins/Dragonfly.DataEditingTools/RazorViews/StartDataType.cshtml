@@ -1,13 +1,9 @@
-@using System.Web.Mvc.Html
-@using Dragonfly.DataEditingTools
-@using Dragonfly.DataEditingTools.Models
-@using Dragonfly.NetModels;
+
 @using Newtonsoft.Json
-@using Umbraco.Web.PropertyEditors
-
 @inherits UmbracoViewPage<StatusMessage>
-
 @{
+	Layout = "_Master.cshtml";
+
     var status = Model;
 
     var SpecialMessage = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessage");
@@ -35,7 +31,7 @@
     <div class="container">
 
         <div class="d-inline-flex p-2" style="padding: .5em 0;">
-            <a class="btn btn-sm btn-primary mr-2" href="/Umbraco/backoffice/Api/TransformationHelperApi/Start">Back to Start</a>
+            <a class="btn btn-sm btn-primary mr-2" href="/umbraco/backoffice/Dragonfly/DataEditingTools/Start">Back to Start</a>
             @*<a class="btn btn-sm btn-info mr-2" href="@baseUrl">Remove All Filters</a>*@
             @*<a class="btn btn-sm btn-success mr-2" href="xx">XX</a>*@
         </div>
@@ -120,9 +116,9 @@
                 {
                     var docTypeAlias = docType.GroupName["Key"].ToString();
                     var docTypeDetails = Services.ContentTypeService.Get(docTypeAlias);
-                    var urlReplace = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/SetupReplaceInData?DocTypeAlias={0}&DataTypeId={1}", docTypeAlias, SelectedDataType.Id);
+                    var urlReplace = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/SetupReplaceInData?DocTypeAlias={0}&DataTypeId={1}", docTypeAlias, SelectedDataType.Id);
                     var urlBackoffice = string.Format("/umbraco#/settings/documentTypes/edit/{0}", docTypeDetails.Id.ToString());
-                    var urlStartDocType = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/StartDocType?DocTypeId={0}", docTypeDetails.Id);
+                    var urlStartDocType = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", docTypeDetails.Id);
                     <li>
                         <b>@docTypeDetails.Name (@docTypeAlias)</b>
                         <br />

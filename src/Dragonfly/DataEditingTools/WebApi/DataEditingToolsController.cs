@@ -77,7 +77,7 @@
 
 		#region "Start" Pages
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/Start
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/Start
 		[HttpGet]
 		public IActionResult Start()
 		{
@@ -130,7 +130,7 @@
 			};
 		}
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/StartPropertyEditorType?PropertyEditorAlias=xx
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/StartPropertyEditorType?PropertyEditorAlias=xx
 		[HttpGet]
 		public IActionResult StartPropertyEditorType(string PropertyEditorAlias)
 		{
@@ -178,7 +178,7 @@
 			};
 		}
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/StartDataType?DataTypeId=xx
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId=xx
 		[HttpGet]
 		public IActionResult StartDataType(int DataTypeId)
 		{
@@ -223,7 +223,7 @@
 			};
 		}
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/StartDocType?DocTypeId=xx
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId=xx
 		[HttpGet]
 		public IActionResult StartDocType(int DocTypeId)
 		{
@@ -276,7 +276,7 @@
 		}
 
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/StartMediaType?MediaTypeId=xx
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/StartMediaType?MediaTypeId=xx
 		[HttpGet]
 		public IActionResult StartMediaType(int MediaTypeId)
 		{
@@ -335,7 +335,7 @@
 
 		#region Prop-to-Prop
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/TransferContentPropertyToPropertySetup?DocTypeAlias=xx
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/TransferContentPropertyToPropertySetup?DocTypeAlias=xx
 		[HttpGet]
 		public IActionResult TransferContentPropertyToPropertySetup(int DocTypeId, string PropertyFrom = "", string PropertyTo = "")
 		{
@@ -390,7 +390,7 @@
 			};
 		}
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/TransferMediaPropertyToPropertySetup?MediaTypeId=xx
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/TransferMediaPropertyToPropertySetup?MediaTypeId=xx
 		[HttpGet]
 		public IActionResult TransferMediaPropertyToPropertySetup(int MediaTypeId, string PropertyFrom = "", string PropertyTo = "")
 		{
@@ -446,7 +446,7 @@
 		}
 
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/TransferPropertyToProperty
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/TransferPropertyToProperty
 		[HttpPost]
 		public IActionResult TransferPropertyToProperty(FormInputsPropertyToProperty FormInputs)
 		{
@@ -589,7 +589,7 @@
 
 		#region FindReplace
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/SetupReplaceInData?DocTypeAlias=xx&DataTypeId=xx
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/SetupReplaceInData?DocTypeAlias=xx&DataTypeId=xx
 		[HttpGet]
 		public IActionResult SetupReplaceInData(string DocTypeAlias, int DataTypeId)
 		{
@@ -644,7 +644,7 @@
 			};
 		}
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/SetupReplaceInData?DocTypeAlias=xx&PropertyAlias=xx
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/SetupReplaceInData?DocTypeAlias=xx&PropertyAlias=xx
 		[HttpGet]
 		public IActionResult SetupReplaceInData(string DocTypeAlias, string PropertyAlias)
 		{
@@ -700,7 +700,7 @@
 			};
 		}
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/SetupReplaceInData?PropertyAlias=xx
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/SetupReplaceInData?PropertyAlias=xx
 		[HttpGet]
 		public IActionResult SetupReplaceInData(string PropertyAlias)
 		{
@@ -757,7 +757,7 @@
 		}
 
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/FindReplace
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/FindReplace
 		[HttpPost]
 		public IActionResult FindReplace(FormInputsFindReplace FormInputs)
 		{
@@ -835,7 +835,7 @@
 			};
 		}
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/ReplaceWithUdis
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/ReplaceWithUdis
 		[HttpPost]
 		public IActionResult ReplaceWithUdis(FormInputsFindReplace FormInputs)
 		{
@@ -909,7 +909,7 @@
 
 		#region Store Legacy Data
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/SetupStoreLegacyData
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/SetupStoreLegacyData
 		[HttpGet]
 		public IActionResult SetupStoreLegacyData()
 		{
@@ -970,7 +970,7 @@
 			};
 		}
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/DoStoreLegacyData
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/DoStoreLegacyData
 		[HttpPost]
 		public IActionResult DoStoreLegacyData(FormInputsStoreLegacyData FormInputs)
 		{
@@ -1118,7 +1118,7 @@
 
 		#region Lookup Udi
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/SetupLookupUdi
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/SetupLookupUdi
 		[HttpGet]
 		public IActionResult SetupLookupUdi()
 		{
@@ -1159,7 +1159,7 @@
 			};
 		}
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/LookupUdi
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/LookupUdi
 		[HttpPost]
 		public IActionResult LookupUdi(FormInputsUdiLookup FormInputs)
 		{
@@ -1214,7 +1214,7 @@
 
 
 		#region JSON Returns
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/TestRaw
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/TestRaw
 		[HttpGet]
 		public IActionResult TestRaw()
 		{
@@ -1239,7 +1239,7 @@
 			return new JsonResult(returnStatus);
 		}
 
-		/// /Umbraco/backoffice/Api/TransformationHelperApi/GetAllProperties
+		/// /umbraco/backoffice/Dragonfly/DataEditingTools/GetAllProperties
 		[HttpGet]
 		public IActionResult GetAllProperties()
 		{

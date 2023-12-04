@@ -64,7 +64,23 @@
 			_config = _dataEditingToolsService.ConfigOptions();
 		}
 
-		#endregion
+		public string PackageDisplayTitle
+		{
+			get
+			{
+				return PackageInfo.DisplayTitle;
+
+			}
+		}
+
+        public Version PackageVersion 	{
+            get
+            {
+                return PackageInfo.Version;
+            }
+        }
+
+        #endregion
 
 		public string GetViewsPath()
 		{

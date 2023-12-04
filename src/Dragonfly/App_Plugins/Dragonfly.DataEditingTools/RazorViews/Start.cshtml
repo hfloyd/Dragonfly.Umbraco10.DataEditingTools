@@ -1,10 +1,4 @@
-@using System.Web.Mvc.Html
-@using Dragonfly.DataEditingTools
-@using Dragonfly.NetModels;
-@using Umbraco.Core.PropertyEditors
-
 @inherits UmbracoViewPage<StatusMessage>
-
 @{
     var status = Model;
 
@@ -20,11 +14,13 @@
     var AllMediaNodes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllMediaNodes") as IEnumerable<IMedia>;
     var AllMediaCompositions = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllMediaCompositions") as IEnumerable<IContentTypeComposition>;
 
-
-    var pvSS = ViewHelpers.GetViewsPath() + "Partials/StylesScripts.cshtml";
+	var pvHeader = ViewHelpers.GetViewsPath() + "Partials/_Header.cshtml";
+    var pvSS = ViewHelpers.GetViewsPath() + "Partials/_StylesScripts.cshtml";
     var pvStatus = ViewHelpers.GetViewsPath() + "Partials/StatusMessage.cshtml";
     var pvFilesList = ViewHelpers.GetViewsPath() + "Partials/FilesList.cshtml";
 
+    var vdd=ViewData;
+    vdd.Add("HideBackButton", true);
 }
 <!DOCTYPE html>
 <html>
@@ -33,29 +29,15 @@
 </head>
 <body>
     <div class="container">
-
-        <h1>Dragonfly Transformation 7 to 8 Helpers</h1>
-        @if (!status.Success)
-        {
-            @Html.Partial(pvStatus, status)
-        }
-        else
-        {
-            if (SpecialMessage != "")
-            {
-                <div class="p-3 mb-2 @SpecialMessageClass text-white">
-                    @Html.Raw(SpecialMessage)
-                </div>
-            }
-
-        }
+        @Html.Partial(pvHeader, status, vdd)
+      
     <ul>
         <li><a href="#PropEditors">Edit Data By Property Type</a></li>
         <li><a href="#DataTypes">Edit Data By DataType</a></li>
         <li><a href="#DocTypes">Edit Data By DocType</a></li>
         <li><a href="#MediaTypes">Edit Data By MediaType</a></li>
         <li><a href="#LegacyData">Store Legacy Data for all Node Types</a></li>
-        <li><a href="/Umbraco/backoffice/Api/TransformationHelperApi/SetupLookupUdi" target="_blank">Lookup a UDI or GUID</a></li>
+        <li><a href="/umbraco/backoffice/Dragonfly/DataEditingTools/SetupLookupUdi" target="_blank">Lookup a UDI or GUID</a></li>
     </ul>
         
         @if (AllPropertyEditorTypes != null)
@@ -64,7 +46,7 @@
             <ol>
                 @foreach (var editor in AllPropertyEditorTypes.OrderBy(n => n.Name))
                 {
-                    var url = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/StartPropertyEditorType?PropertyEditorAlias={0}", editor.Alias);
+                    var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartPropertyEditorType?PropertyEditorAlias={0}", editor.Alias);
                     <li><a href="@url">@editor.Name</a> (@editor.Alias)</li>
                 }
             </ol>
@@ -90,7 +72,7 @@
                     <ol>
                         @foreach (var dt in group.Collection.OrderBy(n => n.Name))
                         {
-                            var url = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/StartDataType?DataTypeId={0}", dt.Id.ToString());
+                            var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={0}", dt.Id.ToString());
                             <li><a href="@url" target="_blank">@dt.Name</a> (@dt.EditorAlias)</li>
                         }
                     </ol>
@@ -125,7 +107,7 @@
                             var comps = doc.ContentTypeComposition;
                             var isComp = allCompIds.Contains(doc.Id);
                             var compInfo = isComp ? " <span class=\"badge badge-dark\">Is Composition</span>" : "";
-                            var url = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/StartDocType?DocTypeId={0}", doc.Id.ToString());
+                            var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", doc.Id.ToString());
                             <li>
                                 <a href="@url" target="_blank">@doc.Name</a> (@doc.Alias) @Html.Raw(compInfo)
                                 <span tooltip="# of Content Nodes" class="badge badge-pill @contentBadgeColor">@qtyContent</span>
@@ -134,7 +116,7 @@
                                     <span>Uses Compositions:</span>
                                     foreach (var comp in comps)
                                     {
-                                        var urlComp = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/StartDocType?DocTypeId={0}", comp.Id.ToString());
+                                        var urlComp = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", comp.Id.ToString());
                                         <a href="@urlComp" target="_blank"><span class="badge badge-secondary">@comp.Name (@comp.Alias)</span></a>
                                     }
 
@@ -173,7 +155,7 @@
                             var comps = doc.ContentTypeComposition;
                             var isComp = allCompIds.Contains(doc.Id);
                             var compInfo = isComp ? " <span class=\"badge badge-dark\">Is Composition</span>" : "";
-                            var url = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/StartMediaType?MediaTypeId={0}", doc.Id.ToString());
+                            var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartMediaType?MediaTypeId={0}", doc.Id.ToString());
                             <li>
                                 <a href="@url" target="_blank">@doc.Name</a> (@doc.Alias) @Html.Raw(compInfo)
                                 <span tooltip="# of Media Nodes" class="badge badge-pill @contentBadgeColor">@qtyNodes</span>
@@ -182,7 +164,7 @@
                                     <span>Uses Compositions:</span>
                                     foreach (var comp in comps)
                                     {
-                                        var urlComp = string.Format("/Umbraco/backoffice/Api/TransformationHelperApi/StartMediaType?MediaTypeId={0}", comp.Id.ToString());
+                                        var urlComp = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartMediaType?MediaTypeId={0}", comp.Id.ToString());
                                         <a href="@urlComp" target="_blank"><span class="badge badge-secondary">@comp.Name (@comp.Alias)</span></a>
                                     }
 
@@ -203,7 +185,7 @@
         </ol>
 
         <div class="d-inline-flex p-2" style="padding: .5em 0;">
-            <a class="btn btn-sm btn-success mr-2" href="/Umbraco/backoffice/Api/TransformationHelperApi/SetupStoreLegacyData">Store Legacy Data</a>
+            <a class="btn btn-sm btn-success mr-2" href="/umbraco/backoffice/Dragonfly/DataEditingTools/SetupStoreLegacyData">Store Legacy Data</a>
         </div>
         
         

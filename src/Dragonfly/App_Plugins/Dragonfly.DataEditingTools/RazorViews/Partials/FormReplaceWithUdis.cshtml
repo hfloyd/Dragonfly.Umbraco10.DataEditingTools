@@ -1,32 +1,29 @@
-@using Dragonfly.DataEditingTools
-@using Dragonfly.DataEditingTools.Models
-
 @inherits UmbracoViewPage<FormInputsFindReplace>
 @{
-    Model.FullPropertyReplace = true;
+	Model.FullPropertyReplace = true;
 }
-    <div class="card card-default mt-2">
-        <h3 class="card-header">Replace Integer Ids with UDIs?</h3>
-        <div class="card-body">
-            <p>This datatype is eligible for updating old integer Ids with new UDI values.</p>
+<div class="card card-default mt-2">
+	<h3 class="card-header">Replace Integer Ids with UDIs?</h3>
+	<div class="card-body">
+		<p>This datatype is eligible for updating old integer Ids with new UDI values.</p>
 
-            <form action="/Umbraco/backoffice/Api/TransformationHelperApi/ReplaceWithUdis" method="post">
-                @Html.HiddenFor(f => f.ContentNodeIdsCsv)
-                @Html.HiddenFor(f => f.PropertyAliasesCsv)
-                @Html.HiddenFor(f => f.FullPropertyReplace)
-                <div class="form-group">
-                    <label for="PreviewOnly">This is a Multi-Select Property</label>
-                    @Html.CheckBoxFor(f => f.FullPropertyIsMultiple)
-                    <small id="PreviewOnlyHelp" class="form-text text-muted">This property might contain multiple IDs (ex: MultiNode TreePicker, etc.)</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="PreviewOnly">Preview Only?</label>
-                    @Html.CheckBoxFor(f => f.PreviewOnly)
-                    <small id="PreviewOnlyHelp" class="form-text text-muted">Just show what would be affected, without saving the changes to Content.</small>
-                </div>
-                <button class="btn btn-primary" value="Submit" type="Submit">Fix Integer Ids in these Nodes</button>
-            </form>
+		<form action="/umbraco/backoffice/Dragonfly/DataEditingTools/ReplaceWithUdis" method="post">
+			@Html.HiddenFor(f => f.ContentNodeIdsCsv)
+			@Html.HiddenFor(f => f.PropertyAliasesCsv)
+			@Html.HiddenFor(f => f.FullPropertyReplace)
+			<div class="form-group">
+				<label for="PreviewOnly">This is a Multi-Select Property</label>
+				@Html.CheckBoxFor(f => f.FullPropertyIsMultiple)
+				<small id="PreviewOnlyHelp" class="form-text text-muted">This property might contain multiple IDs (ex: MultiNode TreePicker, etc.)</small>
+			</div>
 
-        </div>
-    </div>
+			<div class="form-group">
+				<label for="PreviewOnly">Preview Only?</label>
+				@Html.CheckBoxFor(f => f.PreviewOnly)
+				<small id="PreviewOnlyHelp" class="form-text text-muted">Just show what would be affected, without saving the changes to Content.</small>
+			</div>
+			<button class="btn btn-primary" value="Submit" type="Submit">Fix Integer Ids in these Nodes</button>
+		</form>
+
+	</div>
+</div>

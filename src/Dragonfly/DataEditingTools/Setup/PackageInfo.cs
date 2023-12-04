@@ -17,6 +17,12 @@
         /// </summary>
         public const string Name = "Dragonfly Data Editing Tools (for Umbraco 10)";
 
+        
+        /// <summary>
+        /// Gets the title for internal display.
+        /// </summary>
+        public const string DisplayTitle = "Dragonfly Data Editing Tools";
+
         /// <summary>
         /// Gets the version of the package.
         /// </summary>

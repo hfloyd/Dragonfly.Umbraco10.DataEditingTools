@@ -1,10 +1,14 @@
 ﻿{
-    "javascript": [
-		
+    "dashboards": [
+        {
+            "alias": "Dragonfly.DataEditingTools",
+            "view": "~/App_Plugins/Dragonfly.DataEditingTools/dashboard.html",
+            "sections": [
+                "settings"
+            ],
+            "weight": 30
+        }
     ],
-
-    "css": [
-	
-    ]
-
+    "javascript": [],
+    "css": []
 }

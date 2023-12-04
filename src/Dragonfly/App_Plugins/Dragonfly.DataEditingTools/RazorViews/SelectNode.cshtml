@@ -1,11 +1,7 @@
-@using Dragonfly.DataEditingTools
-@using Dragonfly.NetModels;
-@using Dragonfly.NetHelpers
-@using Newtonsoft.Json
-
 @inherits UmbracoViewPage<IEnumerable<IPublishedContent>>
-
 @{
+	Layout = "_Master.cshtml";
+
     var rootNodes = Model;
 
     //var DisplayTitle = Dragonfly.Umbraco7Helpers.Mvc.GetSafeViewDataString(ViewData, "DisplayTitle");
@@ -14,9 +10,9 @@
     //var SpecialMessageClass = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessageClass");
     //var DeleteOptions = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "DeleteOptions") as Dictionary<string, string>;
 
-    var pvSS = Config.GetConfig().GetViewsPath() + "Partials/StylesScripts.cshtml";
-    var pvStatus = Config.GetConfig().GetViewsPath() + "Partials/StatusMessage.cshtml";
-    var pvFilesList = Config.GetConfig().GetViewsPath() + "Partials/FilesList.cshtml";
+    var pvSS = ViewHelpers.GetViewsPath() + "Partials/StylesScripts.cshtml";
+    var pvStatus = ViewHelpers.GetViewsPath() + "Partials/StatusMessage.cshtml";
+    var pvFilesList = ViewHelpers.GetViewsPath() + "Partials/FilesList.cshtml";
 }
 <!DOCTYPE html>
 <html>

@@ -1,64 +1,60 @@
-@using Dragonfly.DataEditingTools
-@using Dragonfly.DataEditingTools.Models
-
 @inherits UmbracoViewPage<FormInputsPropertyToProperty>
-
 @{
-    var typesDict = Enums.PropToPropTypesWithDisplayText();
-    var frTypeOptions = Enums.PropToPropTypesSelectList();
+	var typesDict = Enums.PropToPropTypesWithDisplayText();
+	var frTypeOptions = Enums.PropToPropTypesSelectList();
 
-    var frClassOptions = ViewHelpers.CustomPropToPropTransformersAllClassesSelectList("", "-- SELECT CUSTOM Transformer HERE --", "(No Custom Transformers Available)");
+	var frClassOptions = ViewHelpers.CustomPropToPropTransformersAllClassesSelectList("", "-- SELECT CUSTOM Transformer HERE --", "(No Custom Transformers Available)");
 
-    var propAliases = Model.AvailablePropertiesCSV.Split(',').ToList().OrderBy(n=> n).ToList();
-    var fromPropOptions = new SelectList(propAliases);
+	var propAliases = Model.AvailablePropertiesCSV.Split(',').ToList().OrderBy(n => n).ToList();
+	var fromPropOptions = new SelectList(propAliases);
 }
 
 <div class="card card-default mt-2">
-    <h3 class="card-header">Property-to-Property Options</h3>
-    <div class="card-body">
+	<h3 class="card-header">Property-to-Property Options</h3>
+	<div class="card-body">
 
-        <form action="/Umbraco/backoffice/Api/TransformationHelperApi/TransferPropertyToProperty" method="post">
-            @Html.HiddenFor(f => f.ContentNodeIdsCsv)
-            @Html.HiddenFor(f => f.NodeTypes)
-            @Html.HiddenFor(f => f.TypeAlias)
-            @Html.HiddenFor(f=> f.AvailablePropertiesCSV)
-            <div class="form-group">
-                <label for="TypeOption">Type</label>
-                <div class="d-inline-flex p-2" style="padding: .5em 0;">
-                    @Html.DropDownListFor(f => f.PropToPropTypeOption, frTypeOptions, new { @class = "form-control mr-2" })
-                    @Html.DropDownListFor(f => f.CustomTransformationClass, frClassOptions, new { @class = "form-control mr-2" })
-                </div>
-                <small id="TypeOptionHelp" class="form-text text-muted">
-                    The type of Replacement you want to make:
-                    <ul>
-                        <li><b>Direct Copy</b> - A copy from one property to the other</li>
-                        <li><b>Transform Integer Ids To UDIs</b> - The 'From' Property would be of an INT type and that will be converted to a UDIs for the 'To Property</li>
-                        <li><b>Custom Transformation</b> - Use custom Transformation code (implementing interface ICustomPropToPropDataTransformer)</li>
-                    </ul>
-                </small>
-            </div>
-            <div class="form-group">
-                <label for="PropFrom">Property to copy data From</label>
-                @Html.DropDownListFor(f => f.PropertyAliasFrom, fromPropOptions, "", new { @class = "form-control" })
-                @*<small id="PropFromHelp" class="form-text text-muted">???</small>*@
-            </div>
-            <div class="form-group">
-                <label for="PropTo">Property to copy data To</label>
-                @Html.DropDownListFor(f => f.PropertyAliasTo, fromPropOptions, "", new { @class = "form-control" })
-                @*<small id="PropToHelp" class="form-text text-muted">???</small>*@
-            </div>
-            <div class="form-group">
-                <label for="PreviewOnly">Preview Only?</label>
-                @Html.CheckBoxFor(f => f.PreviewOnly)
-                <small id="PreviewOnlyHelp" class="form-text text-muted">Just show what would be affected, without saving the changes to Content.</small>
-            </div>
-            <div class="form-group">
-                <label for="OverWrite">Overwrite Existing Data?</label>
-                @Html.CheckBoxFor(f => f.OverwriteExistingData)
-                <small id="OverWriteHelp" class="form-text text-muted">If there is already a value in the 'To' property, overwrite it with data from the 'From' property?</small>
-            </div>
-            <button class="btn btn-primary" value="Submit" type="Submit">Do it!</button>
-        </form>
+		<form action="/umbraco/backoffice/Dragonfly/DataEditingTools/TransferPropertyToProperty" method="post">
+			@Html.HiddenFor(f => f.ContentNodeIdsCsv)
+			@Html.HiddenFor(f => f.NodeTypes)
+			@Html.HiddenFor(f => f.TypeAlias)
+			@Html.HiddenFor(f => f.AvailablePropertiesCSV)
+			<div class="form-group">
+				<label for="TypeOption">Type</label>
+				<div class="d-inline-flex p-2" style="padding: .5em 0;">
+					@Html.DropDownListFor(f => f.PropToPropTypeOption, frTypeOptions, new { @class = "form-control mr-2" })
+					@Html.DropDownListFor(f => f.CustomTransformationClass, frClassOptions, new { @class = "form-control mr-2" })
+				</div>
+				<small id="TypeOptionHelp" class="form-text text-muted">
+					The type of Replacement you want to make:
+					<ul>
+						<li><b>Direct Copy</b> - A copy from one property to the other</li>
+						<li><b>Transform Integer Ids To UDIs</b> - The 'From' Property would be of an INT type and that will be converted to a UDIs for the 'To Property</li>
+						<li><b>Custom Transformation</b> - Use custom Transformation code (implementing interface ICustomPropToPropDataTransformer)</li>
+					</ul>
+				</small>
+			</div>
+			<div class="form-group">
+				<label for="PropFrom">Property to copy data From</label>
+				@Html.DropDownListFor(f => f.PropertyAliasFrom, fromPropOptions, "", new { @class = "form-control" })
+				@*<small id="PropFromHelp" class="form-text text-muted">???</small>*@
+			</div>
+			<div class="form-group">
+				<label for="PropTo">Property to copy data To</label>
+				@Html.DropDownListFor(f => f.PropertyAliasTo, fromPropOptions, "", new { @class = "form-control" })
+				@*<small id="PropToHelp" class="form-text text-muted">???</small>*@
+			</div>
+			<div class="form-group">
+				<label for="PreviewOnly">Preview Only?</label>
+				@Html.CheckBoxFor(f => f.PreviewOnly)
+				<small id="PreviewOnlyHelp" class="form-text text-muted">Just show what would be affected, without saving the changes to Content.</small>
+			</div>
+			<div class="form-group">
+				<label for="OverWrite">Overwrite Existing Data?</label>
+				@Html.CheckBoxFor(f => f.OverwriteExistingData)
+				<small id="OverWriteHelp" class="form-text text-muted">If there is already a value in the 'To' property, overwrite it with data from the 'From' property?</small>
+			</div>
+			<button class="btn btn-primary" value="Submit" type="Submit">Do it!</button>
+		</form>
 
-    </div>
+	</div>
 </div>
