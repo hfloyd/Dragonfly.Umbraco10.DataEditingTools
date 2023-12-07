@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Umbraco.Cms.Core.IO;
     using Umbraco.Cms.Core.Services;
     using Umbraco.Cms.Core.Web;
     using Umbraco.Cms.Web.Common;
@@ -22,6 +23,7 @@
         public ServiceContext Services;
         public NetHelperServices.FileHelperService DragonflyFileHelperService { get; }
 
+        public MediaFileManager MediaFileManager;
         public DependencyLoader(
             IConfiguration appSettingsConfig,
             IWebHostEnvironment hostingEnvironment,
@@ -29,7 +31,8 @@
             IHttpContextAccessor contextAccessor,
             IUmbracoContextAccessor umbracoContextAccessor,
             NetHelperServices.FileHelperService fileHelperService,
-            ServiceContext serviceContext
+            ServiceContext serviceContext,
+            MediaFileManager mediaFileManager
            )
         {
             AppSettingsConfig = appSettingsConfig;
@@ -41,6 +44,7 @@
             DragonflyFileHelperService = fileHelperService;
             Context = contextAccessor.HttpContext;
             Services = serviceContext;
+            MediaFileManager = mediaFileManager;
         }
     }
 }

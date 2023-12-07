@@ -10,5 +10,7 @@
         }
     ],
     "javascript": [],
-    "css": []
+    "css": [
+        "/App_Plugins/Dragonfly.DataEditingTools/DragonflyDashboard.css"
+    ]
 }

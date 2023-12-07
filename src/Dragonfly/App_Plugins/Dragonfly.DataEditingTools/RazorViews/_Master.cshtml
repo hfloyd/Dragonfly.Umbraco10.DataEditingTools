@@ -3,32 +3,17 @@
 	var pageData = Model;
 	var status = Model.Status;
 
-	var SpecialMessage = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessage");
-	var SpecialMessageClass = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessageClass");
-	var specialMsgClass = GetClassForMessageType(pageData.)
-	// var SelectedDataType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedDataType") as IDataType;
-	// var SelectedDocType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedDocType") as IContentType;
-	// var SelectedProperty = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedPropertyAlias") as PropertyType;
-	// var AffectedContentNodesIenum = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AffectedContentNodes") as IEnumerable<IContent>;
-	// var AffectedProperties = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AffectedProperties") as IEnumerable<DocTypeProperty>;
-	// var FormInputs = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "FormInputs") as FormInputsFindReplace;
-
-	// var AffectedContentNodes = AffectedContentNodesIenum.ToList();
-
-	// var propertyAliases = AffectedProperties.Select(n => n.Property.Alias).ToList();
+	var specialMessage = Model.SpecialMessage;
+	var specialMsgClass = GetClassForMessageType(pageData.SpecialMessageType);
 
 	//Column Widths
 	var col1Class = "col-sm-3";
 	var col2Class = "col-sm-9";
 
 	var pvStatus = ViewHelpers.GetViewsPath() + "Partials/StatusMessage.cshtml";
-	var pvException = ViewHelpers.GetViewsPath() + "Partials/ExceptionDetailsLink.cshtml";
-	var pvSS = ViewHelpers.GetViewsPath() + "Partials/StylesScripts.cshtml";
-
-	// var pvFormFindReplace = ViewHelpers.GetViewsPath() + "Partials/FormFindReplace.cshtml";
-	// var pvFormReplaceWithUdis = ViewHelpers.GetViewsPath() + "Partials/FormReplaceWithUdis.cshtml";
-
+	var pvSS = ViewHelpers.GetViewsPath() + "Partials/_StylesScripts.cshtml";
 }
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -36,11 +21,15 @@
 </head>
 <body>
 	<div class="container-fluid">
-		<!--TOP Buttons-->
+		@if (pageData.ViewName != "Start")
+		{
+			<!--TOP Buttons-->
 			<div class="d-inline-flex p-2" style="padding: .5em 0;">
 				<a class="btn btn-sm btn-primary mr-2" href="/umbraco/backoffice/Dragonfly/DataEditingTools/Start">Back to Start</a>
+				@await RenderSectionAsync("TopButtons", false)
 			</div>
-		
+		}
+
 		<h1>@ViewHelpers.PackageDisplayTitle <small>v. @ViewHelpers.PackageVersion.ToString(3)</small></h1>
 		@if (!status.Success)
 		{
@@ -48,22 +37,44 @@
 		}
 		else
 		{
-			if (SpecialMessage != "")
+			if (specialMessage != "")
 			{
-				<div class="p-3 mb-2 @SpecialMessageClass text-white">
-					@Html.Raw(SpecialMessage)
+				<div class="p-3 mb-2 @specialMsgClass">
+					@Html.Raw(specialMessage)
 				</div>
 			}
-		}	
-		
+		}
 
 		@RenderBody() @*CHILD TEMPLATE BODY HERE*@
 
 	</div>
 
-	@Html.Partial(pvSS, "scripts")
+	@await Html.PartialAsync(pvSS, "scripts")
 
-	@RenderSection("FooterScripts", required: false)
-
+	@await RenderSectionAsync("FooterScripts", required: false)
 </body>
 </html>
+
+@functions {
+	private string GetClassForMessageType(MessageType PageDataSpecialMessageType)
+	{
+		switch (PageDataSpecialMessageType)
+		{
+			case MessageType.Info:
+				return "bg-info text-white";
+				break;
+
+			case MessageType.Warning:
+				return "";
+				break;
+
+			case MessageType.Error:
+				return "bg-danger text-white";
+				break;
+
+			default:
+				return "";
+		}
+	}
+
+}

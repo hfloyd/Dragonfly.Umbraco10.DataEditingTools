@@ -1,192 +1,161 @@
-
-
-@inherits UmbracoViewPage<StatusMessage>
+@inherits UmbracoViewPage<PageData<StatusMessage>>
 @{
 	Layout = "_Master.cshtml";
 
-    var status = Model;
+	var status = Model.Status;
 
-    var SpecialMessage = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessage");
-    var SpecialMessageClass = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessageClass");
-    var SelectedPropEditor = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedPropEditor") as IDataEditor;
-    var RelatedDataTypes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "RelatedDataTypes") as IEnumerable<IDataType>;
-    var RelatedProperties = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "RelatedProperties") as IEnumerable<DocTypeProperty>;
+	var selectedPropEditor = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedPropEditor") as IDataEditor;
+	var relatedDataTypes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "RelatedDataTypes") as IEnumerable<IDataType>;
+	var relatedProperties = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "RelatedProperties") as IEnumerable<DocTypeProperty>;
 
-    var pvSS = ViewHelpers.GetViewsPath() + "Partials/StylesScripts.cshtml";
-    var pvStatus = ViewHelpers.GetViewsPath() + "Partials/StatusMessage.cshtml";
-    var pvFilesList = ViewHelpers.GetViewsPath() + "Partials/FilesList.cshtml";
-
-
-    //Column Widths for Cards
-    var col1Class = "col-sm-3";
-    var col2Class = "col-sm-9";
-}
-<!DOCTYPE html>
-<html>
-<head>
-    @Html.Partial(pvSS, "styles")
-</head>
-<body>
-    <div class="container">
-
-        <div class="d-inline-flex p-2" style="padding: .5em 0;">
-            <a class="btn btn-sm btn-primary mr-2" href="/umbraco/backoffice/Dragonfly/DataEditingTools/Start">Back to Start</a>
-            @*<a class="btn btn-sm btn-info mr-2" href="@baseUrl">Remove All Filters</a>*@
-            @*<a class="btn btn-sm btn-success mr-2" href="xx">XX</a>*@
-        </div>
-
-        <h1>Dragonfly Transformation 7 to 8 Helpers</h1>
-        @if (!status.Success)
-        {
-            @Html.Partial(pvStatus, status)
-        }
-        else
-        {
-            if (SpecialMessage != "")
-            {
-                <div class="p-3 mb-2 @SpecialMessageClass text-white">
-                    @Html.Raw(SpecialMessage)
-                </div>
-            }
-
-        }
-
-        <h2>Edit Data By Property Type</h2>
-
-        <div class="card card-default">
-            <h5 class="card-header">@SelectedPropEditor.Name</h5>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="@col1Class">Alias</dt>
-                    <dd class="@col2Class">@SelectedPropEditor.Alias</dd>
-                </dl>
-                <dl class="row">
-                    <dt class="@col1Class">Group</dt>
-                    <dd class="@col2Class">@SelectedPropEditor.Group</dd>
-                </dl>
-                <dl class="row">
-                    <dt class="@col1Class">Is Deprecated?</dt>
-                    <dd class="@col2Class">@SelectedPropEditor.IsDeprecated</dd>
-                </dl>
-                <dl class="row">
-                    <dt class="@col1Class">Type</dt>
-                    <dd class="@col2Class">@SelectedPropEditor.Type</dd>
-                </dl>
-                <dl class="row">
-                    <dt class="@col1Class">Icon</dt>
-                    <dd class="@col2Class">@SelectedPropEditor.Icon</dd>
-                </dl>
-                <dl class="row">
-                    <dt class="@col1Class">Default Configuration</dt>
-                    <dd class="@col2Class">
-                        @foreach (var config in SelectedPropEditor.DefaultConfiguration)
-                        {
-                            <div><b>@config.Key</b> : <span>@config.Value</span></div>
-                        }
-                    </dd>
-                </dl>
-            </div>
-        </div>
-
-        <h3> Drill-down: DataTypes</h3>
-        @if (RelatedDataTypes != null)
-        {
-            <ol>
-                @foreach (var dataType in RelatedDataTypes.OrderBy(n => n.Name))
-                {
-                    switch (dataType.EditorAlias)
-                    {
-                        case "Umbraco.NestedContent":
-                            @RenderNestedContentDataTypeInfo(dataType)
-                            break;
-
-                        default:
-                            @RenderDefaultDataTypeInfo(dataType)
-                            break;
-                    }
-                }
-            </ol>
-        }
-
-        <h3> Drill-down: DocTypes and Properties</h3>
-        @if (RelatedProperties != null)
-        {
-            var doctypeGroups = new GroupingCollection<DocTypeProperty>(RelatedProperties);
-            doctypeGroups.GroupItems(n => n.DocTypeAlias);
-
-            <ul>
-                @foreach (var docType in doctypeGroups.Groups)
-                {
-                    <li>
-                        <b>@docType.GroupName["Key"]</b>
-                        <ul>
-                            @foreach (var prop in docType.Collection.OrderBy(n => n.Property.Alias))
-                            {
-                                var thisDataType = Services.DataTypeService.GetDataType(prop.Property.DataTypeId);
-                                <li>
-                                    @prop.Property.Name (@prop.Property.Alias)
-                                    <br />DataType: @thisDataType.Name
-                                </li>
-                            }
-                        </ul>
-                    </li>
-                }
-            </ul>
-        }
-
-        @*<div class="d-inline-flex p-2" style="padding: .5em 0;">
-                <a class="btn btn-sm btn-success mr-2" href="/Umbraco/backoffice/Api/SiteTesterApi/TestAllNodesAndSave">Test All Nodes Now</a>
-            </div>
-            <div class="d-inline-flex p-2" style="padding: .5em 0;">
-                <a class="btn btn-sm btn-success mr-2" href="/Umbraco/backoffice/Api/SiteTesterApi/TestDescendantNodesAndSave?StartNode=0">Test Subset of Nodes...</a>
-            </div>*@
-
-
-    </div>
-
-    @*@Html.Partial(pvSS, "scripts")*@
-</body>
-</html>
-
-
-@helper RenderNestedContentDataTypeInfo(IDataType ThisDataType)
-{
-    var innerProps = ViewHelpers.GetPropertiesOnNestedContent(ThisDataType);
-    var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={0}", ThisDataType.Id);
-<li>
-    <b><a href="@url" target="_blank">@ThisDataType.Name</a></b>
-
-    <table class="table table-sm">
-        <tr>
-            <th class="text-muted">DocType</th>
-            <th class="text-muted">Property Alias</th>
-            <th class="text-muted">DataType</th>
-            <th class="text-muted">Editor</th>
-        </tr>
-
-        @foreach (var prop in innerProps)
-        {
-            var docTypeDetails = Services.ContentTypeService.Get(prop.DocTypeAlias);
-            var dataTypeDetails = Services.DataTypeService.GetDataType(prop.Property.DataTypeId);
-            var urlDataType = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={0}", dataTypeDetails.Id);
-
-            <tr>
-                <td>@docTypeDetails.Name (@prop.DocTypeAlias)</td>
-                <td>@prop.Property.Alias </td>
-                <td><a href="@urlDataType" target="_blank">@dataTypeDetails.Name</a></td>
-                <td>@prop.Property.PropertyEditorAlias</td>
-            </tr>
-        }
-    </table>
-</li>
+	//Column Widths for Cards
+	var col1Class = "col-sm-3";
+	var col2Class = "col-sm-9";
 }
 
-@helper RenderDefaultDataTypeInfo(IDataType ThisDataType)
+<h2>Edit Data By Property Type</h2>
+
+<div class="card card-default">
+	<h5 class="card-header">@selectedPropEditor.Name</h5>
+	<div class="card-body">
+		<dl class="row">
+			<dt class="@col1Class">Alias</dt>
+			<dd class="@col2Class">@selectedPropEditor.Alias</dd>
+		</dl>
+		<dl class="row">
+			<dt class="@col1Class">Group</dt>
+			<dd class="@col2Class">@selectedPropEditor.Group</dd>
+		</dl>
+		<dl class="row">
+			<dt class="@col1Class">Is Deprecated?</dt>
+			<dd class="@col2Class">@selectedPropEditor.IsDeprecated</dd>
+		</dl>
+		<dl class="row">
+			<dt class="@col1Class">Type</dt>
+			<dd class="@col2Class">@selectedPropEditor.Type</dd>
+		</dl>
+		<dl class="row">
+			<dt class="@col1Class">Icon</dt>
+			<dd class="@col2Class">@selectedPropEditor.Icon</dd>
+		</dl>
+		<dl class="row">
+			<dt class="@col1Class">Default Configuration</dt>
+			<dd class="@col2Class">
+				<ul>
+					@foreach (var config in selectedPropEditor.DefaultConfiguration)
+					{
+						var configType = config.Value.GetType();
+						<li>
+							<b>@config.Key:</b>
+							@if (configType.Name.Contains("Dictionary"))
+							{
+								<span>DICTIONARY OF OPTIONS</span>
+							}
+							else if (configType == typeof(DateTime))
+							{
+								var dt = (DateTime)config.Value;
+								<span>@dt.ToShortDateString()</span>
+							}
+							else
+							{
+								<span>@config.Value.ToString()</span>
+							}
+
+							<small> (@config.Value.GetType().ToString())</small>
+						</li>
+					}
+				</ul>
+			</dd>
+		</dl>
+	</div>
+</div>
+
+<h3> Drill-down: DataTypes</h3>
+@if (relatedDataTypes != null)
 {
- var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={0}", ThisDataType.Id);
-<li>
-    <b><a href="@url" target="_blank">@ThisDataType.Name</a></b>
+	<ol>
+		@foreach (var dataType in relatedDataTypes.OrderBy(n => n.Name))
+		{
+			switch (dataType.EditorAlias)
+			{
+				case "Umbraco.NestedContent":
+					RenderNestedContentDataTypeInfo(dataType);
+					break;
 
+				default:
+					RenderDefaultDataTypeInfo(dataType);
+					break;
+			}
+		}
+	</ol>
+}
 
-</li>
+<h3> Drill-down: DocTypes and Properties</h3>
+@if (relatedProperties != null)
+{
+	var doctypeGroups = new GroupingCollection<DocTypeProperty>(relatedProperties);
+	doctypeGroups.GroupItems(n => n.DocTypeAlias);
+
+	<ul>
+		@foreach (var docType in doctypeGroups.Groups)
+		{
+			<li>
+				<b>@docType.GroupName["Key"]</b>
+				<ul>
+					@foreach (var prop in docType.Collection.OrderBy(n => n.Property.Alias))
+					{
+						var thisDataType = DataTypeService.GetDataType(prop.Property.DataTypeId);
+						<li>
+							@prop.Property.Name (@prop.Property.Alias)
+							<br />DataType: @thisDataType.Name
+						</li>
+					}
+				</ul>
+			</li>
+		}
+	</ul>
+}
+
+@functions {
+
+	void RenderNestedContentDataTypeInfo(IDataType ThisDataType)
+	{
+		var innerProps = ViewHelpers.GetPropertiesOnNestedContent(ThisDataType);
+		var url = $"/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={ThisDataType.Id}";
+		<li>
+			<b><a href="@url" target="_blank">@ThisDataType.Name</a></b>
+
+			<table class="table table-sm">
+				<tr>
+					<th class="text-muted">DocType</th>
+					<th class="text-muted">Property Alias</th>
+					<th class="text-muted">DataType</th>
+					<th class="text-muted">Editor</th>
+				</tr>
+
+				@foreach (var prop in innerProps)
+				{
+					var docTypeDetails = ContentTypeService.Get(prop.DocTypeAlias);
+					var dataTypeDetails = DataTypeService.GetDataType(prop.Property.DataTypeId);
+					var urlDataType = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={0}", dataTypeDetails.Id);
+
+					<tr>
+						<td>@docTypeDetails.Name (@prop.DocTypeAlias)</td>
+						<td>@prop.Property.Alias </td>
+						<td><a href="@urlDataType" target="_blank">@dataTypeDetails.Name</a></td>
+						<td>@prop.Property.PropertyEditorAlias</td>
+					</tr>
+				}
+			</table>
+		</li>
+	}
+
+	void RenderDefaultDataTypeInfo(IDataType ThisDataType)
+	{
+		var url = $"/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={ThisDataType.Id}";
+		<li>
+			<b><a href="@url" target="_blank">@ThisDataType.Name</a></b>
+		</li>
+	}
+
 }

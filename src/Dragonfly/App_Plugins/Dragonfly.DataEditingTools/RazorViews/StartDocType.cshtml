@@ -1,303 +1,265 @@
-
 @using ITemplate = Umbraco.Cms.Core.Models.ITemplate
 
-@inherits UmbracoViewPage<StatusMessage>
+@inherits UmbracoViewPage<PageData<StatusMessage>>
 @{
 	Layout = "_Master.cshtml";
-    var status = Model;
+	var status = Model.Status;
 
-    var SpecialMessage = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessage");
-    var SpecialMessageClass = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessageClass");
-    var SelectedDocType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedDocType") as IContentType;
-    var AllCompositions = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllCompositions") as IEnumerable<CompositionsWithTypes>;
-    var RelatedProperties = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "RelatedProperties") as IEnumerable<DocTypeProperty>;
-    var ContentNodesOfType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "ContentNodesOfType") as IEnumerable<IContent>;
+	var SelectedDocType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedDocType") as IContentType;
+	var AllCompositions = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllCompositions") as IEnumerable<CompositionsWithTypes>;
+	var RelatedProperties = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "RelatedProperties") as IEnumerable<DocTypeProperty>;
+	var ContentNodesOfType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "ContentNodesOfType") as IEnumerable<IContent>;
 
-    var pvSS = ViewHelpers.GetViewsPath() + "Partials/StylesScripts.cshtml";
-    var pvStatus = ViewHelpers.GetViewsPath() + "Partials/StatusMessage.cshtml";
-    var pvFilesList = ViewHelpers.GetViewsPath() + "Partials/FilesList.cshtml";
 
-    var urlBackofficeMain = string.Format("/umbraco#/settings/documentTypes/edit/{0}", SelectedDocType.Id);
-    var allComps = AllCompositions.SelectMany(n => n.Compositions);
-    var allCompIds = allComps.Select(n => n.Id);
-    var isComp = allCompIds.Contains(SelectedDocType.Id);
-    var docTypesUsingComp = AllCompositions.Where(n => n.Compositions.Any(c => c.Id == SelectedDocType.Id));
+	var urlBackofficeMain = string.Format("/umbraco#/settings/documentTypes/edit/{0}", SelectedDocType.Id);
+	var allComps = AllCompositions.SelectMany(n => n.Compositions);
+	var allCompIds = allComps.Select(n => n.Id);
+	var isComp = allCompIds.Contains(SelectedDocType.Id);
+	var docTypesUsingComp = AllCompositions.Where(n => n.Compositions.Any(c => c.Id == SelectedDocType.Id));
 
-    var urlPropToProp = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/TransferContentPropertyToPropertySetup?DocTypeId={0}", SelectedDocType.Id);
+	var urlPropToProp = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/TransferContentPropertyToPropertySetup?DocTypeId={0}", SelectedDocType.Id);
 
-    var ncTypes = ViewHelpers.GetNestedContentDataTypes(SelectedDocType.Alias);
+	var ncTypes = ViewHelpers.GetNestedContentDataTypes(SelectedDocType.Alias);
 
-    //Column Widths for Cards
-    var col1Class = "col-sm-3";
-    var col2Class = "col-sm-9";
+	//Column Widths for Cards
+	var col1Class = "col-sm-3";
+	var col2Class = "col-sm-9";
 }
-<!DOCTYPE html>
-<html>
-<head>
-    @Html.Partial(pvSS, "styles")
-</head>
-<body>
-    <div class="container">
 
-        <div class="d-inline-flex p-2" style="padding: .5em 0;">
-            <a class="btn btn-sm btn-primary mr-2" href="/umbraco/backoffice/Dragonfly/DataEditingTools/Start">Back to Start</a>
-            @*<a class="btn btn-sm btn-info mr-2" href="@baseUrl">Remove All Filters</a>*@
-            @*<a class="btn btn-sm btn-success mr-2" href="xx">XX</a>*@
-        </div>
+<h2>Edit Data By Document Type</h2>
 
-        <h1>Dragonfly Transformation 7 to 8 Helpers</h1>
-        @if (!status.Success)
-        {
-            @Html.Partial(pvStatus, status)
-        }
-        else
-        {
-            if (SpecialMessage != "")
-            {
-                <div class="p-3 mb-2 @SpecialMessageClass text-white">
-                    @Html.Raw(SpecialMessage)
-                </div>
-            }
-        }
+<div class="card card-default">
+	<h5 class="card-header">@SelectedDocType.Name (@SelectedDocType.Alias)</h5>
+	<div class="card-body">
+		<dl class="row">
+			<dt class="@col1Class">Is an Element Type?</dt>
+			<dd class="@col2Class">@SelectedDocType.IsElement</dd>
+		</dl>
+		<dl class="row">
+			<dt class="@col1Class">Is a Composition?</dt>
+			<dd class="@col2Class">@isComp</dd>
+		</dl>
+		@if (isComp)
+		{
+			<dl class="row">
+				<dt class="@col1Class">DocTypes Using this Composition</dt>
+				<dd class="@col2Class">
+					<ol>
+						@foreach (var item in docTypesUsingComp)
+						{
+							var docType = ContentTypeService.Get(item.ContentTypeAlias);
+							var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", docType.Id.ToString());
+							<li> <a href="@url" target="_blank">@docType.Name</a> (@docType.Alias)</li>
+						}
+					</ol>
+				</dd>
+			</dl>
+		}
+		<dl class="row">
+			<dt class="@col1Class">Uses Compositions</dt>
+			<dd class="@col2Class">
+				@{
+					var comps = SelectedDocType.ContentTypeComposition;
+				}
+				@if (comps.Any())
+				{
+					<ol>
+						@foreach (var comp in comps)
+						{
+							var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", comp.Id.ToString());
+							<li><a href="@url" target="_blank">@comp.Name (@comp.Alias)</a></li>
+						}
+					</ol>
+				}
+				else
+				{
+					<text>None</text>
+				}
+			</dd>
+		</dl>
+		<dl class="row">
+			<dt class="@col1Class">Allowed Children</dt>
+			<dd class="@col2Class">
+				@if (SelectedDocType.AllowedContentTypes.Any())
+				{
+					<ol>
+						@foreach (var allowedType in SelectedDocType.AllowedContentTypes)
+						{
+							<li>@allowedType.Alias</li>
+						}
+					</ol>
+				}
+				else
+				{
+					<text>None</text>
+				}
 
-        <h2>Edit Data By Document Type</h2>
+			</dd>
+		</dl>
+		<dl class="row">
+			<dt class="@col1Class"># of Content Nodes</dt>
+			<dd class="@col2Class">@ContentNodesOfType.Count()</dd>
+		</dl>
+		@if (ncTypes.Any())
+		{
+			<dl class="row">
+				<dt class="@col1Class">Nested Content DataTypes Using this DocType</dt>
+				<dd class="@col2Class">
+					<ul>
+						@foreach (var type in ncTypes)
+						{
+							var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={0}", type.Id.ToString());
+							<li><a href="@url" target="_blank">@type.Name (@type.EditorAlias)</a></li>
+						}
+					</ul>
+				</dd>
+			</dl>
+		}
+		@*<dl class="row">
+		<dt class="@col1Class">Configuration JSON</dt>
+		<dd class="@col2Class">@JsonConvert.SerializeObject(SelectedDataType.Configuration)</dd>
+		</dl>*@
+		<a class="btn btn-sm btn-success mr-2" href="@urlBackofficeMain" target="_blank">Edit this DocType in the Back-office</a>
+		<a class="btn btn-sm btn-success mr-2" href="@urlPropToProp" target="_blank">Transfer Data between properties on this Doctype</a>
 
-        <div class="card card-default">
-            <h5 class="card-header">@SelectedDocType.Name (@SelectedDocType.Alias)</h5>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="@col1Class">Is an Element Type?</dt>
-                    <dd class="@col2Class">@SelectedDocType.IsElement</dd>
-                </dl>
-                <dl class="row">
-                    <dt class="@col1Class">Is a Composition?</dt>
-                    <dd class="@col2Class">@isComp</dd>
-                </dl>
-                @if (isComp)
-                {
-                    <dl class="row">
-                        <dt class="@col1Class">DocTypes Using this Composition</dt>
-                        <dd class="@col2Class">
-                            <ol>
-                                @foreach (var item in docTypesUsingComp)
-                                {
-                                    var docType = Services.ContentTypeService.Get(item.ContentTypeAlias);
-                                    var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", docType.Id.ToString());
-                                    <li> <a href="@url" target="_blank">@docType.Name</a> (@docType.Alias)</li>
-                                }
-                            </ol>
-                        </dd>
-                    </dl>
-                }
-                <dl class="row">
-                    <dt class="@col1Class">Uses Compositions</dt>
-                    <dd class="@col2Class">
-                        @{ var comps = SelectedDocType.ContentTypeComposition; }
-                        @if (comps.Any())
-                        {
-                            <ol>
-                                @foreach (var comp in comps)
-                                {
-                                    var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", comp.Id.ToString());
-                                    <li><a href="@url" target="_blank">@comp.Name (@comp.Alias)</a></li>
-                                }
-                            </ol>
-                        }
-                        else
-                        {<text>None</text>}
-                    </dd>
-                </dl>
-                <dl class="row">
-                    <dt class="@col1Class">Allowed Children</dt>
-                    <dd class="@col2Class">
-                        @if (SelectedDocType.AllowedContentTypes.Any())
-                        {
-                        <ol>
-                            @foreach (var allowedType in SelectedDocType.AllowedContentTypes)
-                            {
-                                <li>@allowedType.Alias</li>
-                            }
-                        </ol>
-                        }
-                        else
-                        {<text>None</text>}
+	</div>
 
-                    </dd>
-                </dl>
-                <dl class="row">
-                    <dt class="@col1Class"># of Content Nodes</dt>
-                    <dd class="@col2Class">@ContentNodesOfType.Count()</dd>
-                </dl>
-                @if (ncTypes.Any())
-                {
-                    <dl class="row">
-                        <dt class="@col1Class">Nested Content DataTypes Using this DocType</dt>
-                        <dd class="@col2Class">
-                            <ul>
-                                @foreach (var type in ncTypes)
-                                {
-                                    var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={0}", type.Id.ToString());
-                                    <li><a href="@url" target="_blank">@type.Name (@type.EditorAlias)</a></li>
-                                }
-                            </ul>
-                        </dd>
-                    </dl>
-                }
-                @*<dl class="row">
-                        <dt class="@col1Class">Configuration JSON</dt>
-                        <dd class="@col2Class">@JsonConvert.SerializeObject(SelectedDataType.Configuration)</dd>
-                    </dl>*@
-                <a class="btn btn-sm btn-success mr-2" href="@urlBackofficeMain" target="_blank">Edit this DocType in the Back-office</a>
-                <a class="btn btn-sm btn-success mr-2" href="@urlPropToProp" target="_blank">Transfer Data between properties on this Doctype</a>
+</div>
 
-            </div>
+@if (RelatedProperties != null)
+{
+	<h3 class="mt-2">Drill-down: Properties</h3>
 
-        </div>
+	var doctypeGroups = new GroupingCollection<DocTypeProperty>(RelatedProperties);
+	doctypeGroups.GroupItems(n => n.DocTypeAlias);
 
-        @if (RelatedProperties != null)
-        {
-            <h3 class="mt-2">Drill-down: Properties</h3>
+	<ul>
+		@foreach (var docType in doctypeGroups.Groups)
+		{
+			var docTypeAlias = docType.GroupName["Key"].ToString();
+			var docTypeDetails = ContentTypeService.Get(docTypeAlias);
+			var urlBackoffice = string.Format("/umbraco#/settings/documentTypes/edit/{0}", docTypeDetails.Id.ToString());
+			var propGroups = new GroupingCollection<DocTypeProperty>(docType.Collection);
+			propGroups.GroupItems(n => n.GroupName);
 
-            var doctypeGroups = new GroupingCollection<DocTypeProperty>(RelatedProperties);
-            doctypeGroups.GroupItems(n => n.DocTypeAlias);
+			<li>
+				<h4>@docTypeDetails.Name (@docTypeAlias)</h4>
+				<br />
+				@*   <a class="btn btn-sm btn-success mr-2" href="@urlBackoffice" target="_blank">Edit this DocType in the Back-office</a>
 
-            <ul>
-                @foreach (var docType in doctypeGroups.Groups)
-                {
-                    var docTypeAlias = docType.GroupName["Key"].ToString();
-                    var docTypeDetails = Services.ContentTypeService.Get(docTypeAlias);
-                    var urlBackoffice = string.Format("/umbraco#/settings/documentTypes/edit/{0}", docTypeDetails.Id.ToString());
-                    var propGroups = new GroupingCollection<DocTypeProperty>(docType.Collection);
-                    propGroups.GroupItems(n => n.GroupName);
+		@*<p class="mt-1"><i>Properties matching DataType:</i></p>*@
+				<ul>
+					@foreach (var propGroup in propGroups.Groups)
+					{
+						var groupName = @propGroup.GroupName["Key"].ToString();
 
-                    <li>
-                        <h4>@docTypeDetails.Name (@docTypeAlias)</h4>
-                        <br />
-                        @*   <a class="btn btn-sm btn-success mr-2" href="@urlBackoffice" target="_blank">Edit this DocType in the Back-office</a>
+						<li>
+							<h5>@groupName</h5>
+							<table class="table table-hover table-condensed">
 
-                            @*<p class="mt-1"><i>Properties matching DataType:</i></p>*@
-                        <ul>
-                            @foreach (var propGroup in propGroups.Groups)
-                            {
-                                var groupName = @propGroup.GroupName["Key"].ToString();
+								@foreach (var prop in propGroup.Collection.OrderBy(n => n.Property.Alias))
+								{
+									var thisDataType = DataTypeService.GetDataType(prop.Property.DataTypeId);
+									var urlReplace = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/SetupReplaceInData?DocTypeAlias={0}&PropertyAlias={1}", docTypeAlias, prop.Property.Alias);
+									var urlReplaceAll = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/SetupReplaceInData?PropertyAlias={0}", prop.Property.Alias);
 
-                                <li>
-                                    <h5>@groupName</h5>
-                                    <table class="table table-hover table-condensed">
+									<tr>
+										<td>
+											<b>@prop.Property.Name</b> (@prop.Property.Alias)
+											@if (prop.CompositionDocTypeAlias != "")
+											{
+												<span class="badge badge-secondary">@prop.CompositionDocTypeAlias</span>
+											}
+										</td>
+										<td>
+											DataType: @thisDataType.Name
+										</td>
+										<td>
+											<a class="btn btn-sm btn-success mr-2 mb-1" href="@urlReplace" target="_blank">Fix Data in this DocType/Property</a>
+											<a class="btn btn-sm btn-success mr-2" href="@urlReplaceAll" target="_blank">Fix Data in this Property across DocTypes</a>
+										</td>
+									</tr>
+								}
+							</table>
 
-                                        @foreach (var prop in propGroup.Collection.OrderBy(n => n.Property.Alias))
-                                        {
-                                            var thisDataType = Services.DataTypeService.GetDataType(prop.Property.DataTypeId);
-                                            var urlReplace = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/SetupReplaceInData?DocTypeAlias={0}&PropertyAlias={1}", docTypeAlias, prop.Property.Alias);
-                                            var urlReplaceAll = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/SetupReplaceInData?PropertyAlias={0}", prop.Property.Alias);
+						</li>
+					}
+				</ul>
+			</li>
+		}
+	</ul>
+}
 
-                                            <tr>
-                                                <td>
-                                                    <b>@prop.Property.Name</b> (@prop.Property.Alias)
-                                                    @if (prop.CompositionDocTypeAlias != "")
-                                                    {
-                                                        <span class="badge badge-secondary">@prop.CompositionDocTypeAlias</span>
-                                                    }
-                                                </td>
-                                                <td>
-                                                    DataType: @thisDataType.Name
-                                                </td>
-                                                <td>
-                                                    <a class="btn btn-sm btn-success mr-2 mb-1" href="@urlReplace" target="_blank">Fix Data in this DocType/Property</a>
-                                                    <a class="btn btn-sm btn-success mr-2" href="@urlReplaceAll" target="_blank">Fix Data in this Property across DocTypes</a>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </table>
+@if (ContentNodesOfType.Any())
+{
+	<h3 class="mt-2">Content Nodes</h3>
+	var counter = 0;
+	<table id="umbracodata" class="table table-striped table-bordered table-hover table-sm" cellspacing="0" style="max-width: 1600px !important;">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Node Id</th>
+				<th>Node Name</th>
+				<th>Node Is Published</th>
+				<th>Template</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var node in ContentNodesOfType.ToList())
+			{
+				counter++;
 
-                                </li>
-                            }
-                        </ul>
-                    </li>
-                }
-            </ul>
-        }
+				var urlBackoffice = string.Format("/umbraco/#/content/content/edit/{0}", node.Id.ToString());
 
-        @if (ContentNodesOfType.Any())
-        {
-            <h3 class="mt-2">Content Nodes</h3>
-            var counter = 0;
-            <table id="umbracodata" class="table table-striped table-bordered table-hover table-sm" cellspacing="0" style="max-width: 1600px !important;">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Node Id</th>
-                        <th>Node Name</th>
-                        <th>Node Is Published</th>
-                        <th>Template</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var node in ContentNodesOfType.ToList())
-                    {
-                        counter++;
+				var templateInfo = "NONE";
+				if (node.TemplateId != null)
+				{
+					var templateId = (int)node.TemplateId;
+					var template = FileService.GetTemplate(templateId);
+					templateInfo = string.Format("{0} ({1})", template.Name, template.Alias);
+				}
 
-                        var urlBackoffice = string.Format("/umbraco/#/content/content/edit/{0}", node.Id.ToString());
-
-                        var templateInfo = "NONE";
-                        if (node.TemplateId != null)
-                        {
-                            var templateId = (int)node.TemplateId;
-                            var template = Services.FileService.GetTemplate(templateId);
-                            templateInfo = string.Format("{0} ({1})", template.Name, template.Alias);
-                        }
-
-                        <tr>
-                            <td>@counter</td>
-                            <td><a href="@urlBackoffice" target="_blank">@node.Id</a></td>
-                            <td>@node.Name</td>
-                            <td>@node.Published</td>
-                            <td>@templateInfo</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-
-        @*<div class="d-inline-flex p-2" style="padding: .5em 0;">
-                <a class="btn btn-sm btn-success mr-2" href="/Umbraco/backoffice/Api/SiteTesterApi/TestAllNodesAndSave">Test All Nodes Now</a>
-            </div>
-            <div class="d-inline-flex p-2" style="padding: .5em 0;">
-                <a class="btn btn-sm btn-success mr-2" href="/Umbraco/backoffice/Api/SiteTesterApi/TestDescendantNodesAndSave?StartNode=0">Test Subset of Nodes...</a>
-            </div>*@
+				<tr>
+					<td>@counter</td>
+					<td><a href="@urlBackoffice" target="_blank">@node.Id</a></td>
+					<td>@node.Name</td>
+					<td>@node.Published</td>
+					<td>@templateInfo</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
 
 
-    </div>
+@section FooterScripts {
+	<script type="text/javascript">
+		$(document).ready(function () {
 
-    @Html.Partial(pvSS, "scripts")
+			// Setup - add a text input to each footer cell
+			$('#umbracodata tfoot th').each(function () {
+				var title = $(this).text();
+				$(this).html('<input type="text" placeholder="Search ' + title + '" />');
+			});
 
-    <script type="text/javascript">
-        $(document).ready(function () {
+			$('#umbracodata').DataTable({
+				"lengthMenu": [[10, 25, 50, - 1], [10, 25, 50, "All"]]
+			});
 
-            // Setup - add a text input to each footer cell
-            $('#umbracodata tfoot th').each(function () {
-                var title = $(this).text();
-                $(this).html('<input type="text" placeholder="Search ' + title + '" />');
-            });
+			// Apply the search
+			table.columns().every(function () {
+				var that = this;
 
-            $('#umbracodata').DataTable({
-                "lengthMenu": [[10, 25, 50, - 1], [10, 25, 50, "All"]]
-            });
-
-            // Apply the search
-            table.columns().every(function () {
-                var that = this;
-
-                $('input', this.footer()).on('keyup change', function () {
-                    if (that.search() !== this.value) {
-                        that
-                            .search(this.value)
-                            .draw();
-                    }
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+				$('input', this.footer()).on('keyup change',
+					function () {
+						if (that.search() !== this.value) {
+							that
+								.search(this.value)
+								.draw();
+						}
+					});
+			});
+		});
+	</script>
+}
 

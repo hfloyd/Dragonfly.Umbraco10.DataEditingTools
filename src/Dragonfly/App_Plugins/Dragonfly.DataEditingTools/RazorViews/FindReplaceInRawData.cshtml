@@ -1,10 +1,7 @@
-@inherits UmbracoViewPage<StatusMessage>
+@inherits UmbracoViewPage<PageData<StatusMessage>>
 @{
 	Layout = "_Master.cshtml";
 	var status = Model;
-
-	var SpecialMessage = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessage");
-	var SpecialMessageClass = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessageClass");
 
 	var SelectedDataType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedDataType") as IDataType;
 	var SelectedDocType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedDocType") as IContentType;
@@ -20,26 +17,11 @@
 	//Column Widths
 	var col1Class = "col-sm-3";
 	var col2Class = "col-sm-9";
-
-	var pvHeader = ViewHelpers.GetViewsPath() + "Partials/_Header.cshtml";
-	
-	var pvSS = ViewHelpers.GetViewsPath() + "Partials/StylesScripts.cshtml";
 	
 	var pvFormFindReplace = ViewHelpers.GetViewsPath() + "Partials/FormFindReplace.cshtml";
 	var pvFormReplaceWithUdis = ViewHelpers.GetViewsPath() + "Partials/FormReplaceWithUdis.cshtml";
 
-	var vdd=ViewData;
-	vdd.Add("HideBackButton", false);
 }
-<!DOCTYPE html>
-<html>
-<head>
-	@Html.Partial(pvSS, "styles")
-</head>
-<body>
-	<div class="container-fluid">
-
-		@Html.Partial(pvHeader, status, vdd)
 
 		<h2>Update Content Node Data</h2>
 
@@ -152,20 +134,19 @@
 
 		@if (ViewHelpers.IsEligibleForIdToUdiReplace(SelectedDataType.EditorAlias))
 		{
-			@Html.Partial(pvFormReplaceWithUdis, FormInputs)
+			@await Html.PartialAsync(pvFormReplaceWithUdis, FormInputs)
 		}
 
-		@Html.Partial(pvFormFindReplace, FormInputs)
 
-	</div>
+@await Html.PartialAsync(pvFormFindReplace, FormInputs)
 
-	@Html.Partial(pvSS, "scripts")
 
+@section FooterScripts {
 	<script type="text/javascript">
-		$(document).ready(function () {
+		$(document).ready(function() {
 
 			// Setup - add a text input to each footer cell
-			$('#umbracodata tfoot th').each(function () {
+			$('#umbracodata tfoot th').each(function() {
 				var title = $(this).text();
 				$(this).html('<input type="text" placeholder="Search ' + title + '" />');
 			});
@@ -175,19 +156,19 @@
 			});
 
 			// Apply the search
-			table.columns().every(function () {
+			table.columns().every(function() {
 				var that = this;
 
-				$('input', this.footer()).on('keyup change', function () {
-					if (that.search() !== this.value) {
-						that
-							.search(this.value)
-							.draw();
-					}
-				});
+				$('input', this.footer()).on('keyup change',
+					function() {
+						if (that.search() !== this.value) {
+							that
+								.search(this.value)
+								.draw();
+						}
+					});
 			});
 
 		});
 	</script>
-</body>
-</html>
+}

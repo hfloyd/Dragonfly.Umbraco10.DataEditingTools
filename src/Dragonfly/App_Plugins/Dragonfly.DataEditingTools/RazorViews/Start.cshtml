@@ -1,205 +1,174 @@
-@inherits UmbracoViewPage<StatusMessage>
+@inherits UmbracoViewPage<IPageData>
 @{
-    var status = Model;
+	Layout = "_Master.cshtml";
 
-    var SpecialMessage = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessage");
-    var SpecialMessageClass = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessageClass");
+	var pageData = Model;
+	var status = Model.Status;
 
-    var AllPropertyEditorTypes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllPropertyEditorTypes") as IEnumerable<IDataEditor>;
-    var AllDataTypes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllDataTypes") as IEnumerable<IDataType>;
-    var AllDocTypes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllDocTypes") as IEnumerable<IContentType>;
-    var AllContentCompositions = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllContentCompositions") as IEnumerable<IContentTypeComposition>;
-    var AllContentNodes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllContentNodes") as IEnumerable<IContent>;
-    var AllMediaTypes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllMediaTypes") as IEnumerable<IMediaType>;
-    var AllMediaNodes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllMediaNodes") as IEnumerable<IMedia>;
-    var AllMediaCompositions = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllMediaCompositions") as IEnumerable<IContentTypeComposition>;
+	var AllPropertyEditorTypes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllPropertyEditorTypes") as IEnumerable<IDataEditor>;
+	var AllDataTypes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllDataTypes") as IEnumerable<IDataType>;
+	var AllDocTypes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllDocTypes") as IEnumerable<IContentType>;
+	var AllContentCompositions = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllContentCompositions") as IEnumerable<IContentTypeComposition>;
+	var AllContentNodes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllContentNodes") as IEnumerable<IContent>;
+	var AllMediaTypes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllMediaTypes") as IEnumerable<IMediaType>;
+	var AllMediaNodes = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllMediaNodes") as IEnumerable<IMedia>;
+	var AllMediaCompositions = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AllMediaCompositions") as IEnumerable<IContentTypeComposition>;
 
-	var pvHeader = ViewHelpers.GetViewsPath() + "Partials/_Header.cshtml";
-    var pvSS = ViewHelpers.GetViewsPath() + "Partials/_StylesScripts.cshtml";
-    var pvStatus = ViewHelpers.GetViewsPath() + "Partials/StatusMessage.cshtml";
-    var pvFilesList = ViewHelpers.GetViewsPath() + "Partials/FilesList.cshtml";
-
-    var vdd=ViewData;
-    vdd.Add("HideBackButton", true);
 }
-<!DOCTYPE html>
-<html>
-<head>
-    @Html.Partial(pvSS, "styles")
-</head>
-<body>
-    <div class="container">
-        @Html.Partial(pvHeader, status, vdd)
-      
-    <ul>
-        <li><a href="#PropEditors">Edit Data By Property Type</a></li>
-        <li><a href="#DataTypes">Edit Data By DataType</a></li>
-        <li><a href="#DocTypes">Edit Data By DocType</a></li>
-        <li><a href="#MediaTypes">Edit Data By MediaType</a></li>
-        <li><a href="#LegacyData">Store Legacy Data for all Node Types</a></li>
-        <li><a href="/umbraco/backoffice/Dragonfly/DataEditingTools/SetupLookupUdi" target="_blank">Lookup a UDI or GUID</a></li>
-    </ul>
-        
-        @if (AllPropertyEditorTypes != null)
-        {
-            <h3 id="PropEditors">Edit Data By Property Type</h3>
-            <ol>
-                @foreach (var editor in AllPropertyEditorTypes.OrderBy(n => n.Name))
-                {
-                    var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartPropertyEditorType?PropertyEditorAlias={0}", editor.Alias);
-                    <li><a href="@url">@editor.Name</a> (@editor.Alias)</li>
-                }
-            </ol>
-        }
 
-        @if (AllDataTypes != null)
-        {
-            <h3 id="DataTypes">Edit Data By DataType</h3>
-            <p>@AllDataTypes.Count() total DataTypes</p>
+<ul>
+	<li><a href="#PropEditors">Edit Data By Property Type</a></li>
+	<li><a href="#DataTypes">Edit Data By DataType</a></li>
+	<li><a href="#DocTypes">Edit Data By DocType</a></li>
+	<li><a href="#MediaTypes">Edit Data By MediaType</a></li>
+	<li><a href="#LegacyData">Store Legacy Data for all Node Types</a></li>
+	<li><a href="/umbraco/backoffice/Dragonfly/DataEditingTools/SetupLookupUdi" target="_blank">Lookup a UDI or GUID</a></li>
+</ul>
 
-            var dataTypesInFolders = new GroupingCollection<IDataType>(AllDataTypes);
-            dataTypesInFolders.GroupItems<string>(n => ViewHelpers.GetDataTypeFolderPath(n));
+@if (AllPropertyEditorTypes != null)
+{
+	<h3 id="PropEditors">Edit Data By Property Type</h3>
+	<ol>
+		@foreach (var editor in AllPropertyEditorTypes.OrderBy(n => n.Name))
+		{
+			var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartPropertyEditorType?PropertyEditorAlias={0}", editor.Alias);
+			<li><a href="@url">@editor.Name</a> (@editor.Alias)</li>
+		}
+	</ol>
+}
 
-            foreach (var group in dataTypesInFolders.Groups.OrderBy(g => g.GroupName["Key"]))
-            {
-                //var folderId = Convert.ToInt32(group.GroupName["Key"]);
-                //var folderContainer = Services.DataTypeService.GetContainer(folderId);
-                //var folderName = folderContainer!=null ? folderContainer.Name :"[ROOT]";
+@if (AllDataTypes != null)
+{
+	<h3 id="DataTypes">Edit Data By DataType</h3>
+	<p>@AllDataTypes.Count() total DataTypes</p>
 
-                var folderName = group.GroupName["Key"];
-                <p>
-                    <b>@folderName</b>
-                    <ol>
-                        @foreach (var dt in group.Collection.OrderBy(n => n.Name))
-                        {
-                            var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={0}", dt.Id.ToString());
-                            <li><a href="@url" target="_blank">@dt.Name</a> (@dt.EditorAlias)</li>
-                        }
-                    </ol>
-                </p>
-            }
-        }
+	var dataTypesInFolders = new GroupingCollection<IDataType>(AllDataTypes);
+	dataTypesInFolders.GroupItems<string>(n => ViewHelpers.GetDataTypeFolderPath(n));
 
-        @if (AllDocTypes != null)
-        {
-            <h3 id="DocTypes">Edit Data By DocType</h3>
-            <p>@AllDocTypes.Count() total DocTypes</p>
+	foreach (var group in dataTypesInFolders.Groups.OrderBy(g => g.GroupName["Key"]))
+	{
+		//var folderId = Convert.ToInt32(group.GroupName["Key"]);
+		//var folderContainer = Services.DataTypeService.GetContainer(folderId);
+		//var folderName = folderContainer!=null ? folderContainer.Name :"[ROOT]";
 
-            var allCompIds = AllContentCompositions.Select(n => n.Id);
-            var docTypesInFolders = new GroupingCollection<IContentType>(AllDocTypes);
-            docTypesInFolders.GroupItems<string>(n => ViewHelpers.GetDocTypeFolderPath(n));
+		var folderName = group.GroupName["Key"];
+		<p>
+			<b>@folderName</b>
+			<ol>
+				@foreach (var dt in group.Collection.OrderBy(n => n.Name))
+				{
+					var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDataType?DataTypeId={0}", dt.Id.ToString());
+					<li><a href="@url" target="_blank">@dt.Name</a> (@dt.EditorAlias)</li>
+				}
+			</ol>
+		</p>
+	}
+}
 
-            foreach (var group in docTypesInFolders.Groups.OrderBy(g => g.GroupName["Key"]))
-            {
-                //var folderId = Convert.ToInt32(group.GroupName["Key"]);
-                //var folderContainer = Services.DataTypeService.GetContainer(folderId);
-                //var folderName = folderContainer!=null ? folderContainer.Name :"[ROOT]";
+@if (AllDocTypes != null)
+{
+	<h3 id="DocTypes">Edit Data By DocType</h3>
+	<p>@AllDocTypes.Count() total DocTypes</p>
 
-                var folderName = group.GroupName["Key"];
-                <p>
-                    <b>@folderName</b>
-                    <ol>
-                        @foreach (var doc in group.Collection.OrderBy(n => n.Name))
-                        {
-                            var matchingContent = AllContentNodes.Where(n => n.ContentTypeId == doc.Id);
-                            var qtyContent = matchingContent.Count();
-                            var contentBadgeColor = qtyContent == 0 ? "badge-warning" : "badge-info";
-                            var comps = doc.ContentTypeComposition;
-                            var isComp = allCompIds.Contains(doc.Id);
-                            var compInfo = isComp ? " <span class=\"badge badge-dark\">Is Composition</span>" : "";
-                            var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", doc.Id.ToString());
-                            <li>
-                                <a href="@url" target="_blank">@doc.Name</a> (@doc.Alias) @Html.Raw(compInfo)
-                                <span tooltip="# of Content Nodes" class="badge badge-pill @contentBadgeColor">@qtyContent</span>
-                                @if (comps.Any())
-                                {
-                                    <span>Uses Compositions:</span>
-                                    foreach (var comp in comps)
-                                    {
-                                        var urlComp = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", comp.Id.ToString());
-                                        <a href="@urlComp" target="_blank"><span class="badge badge-secondary">@comp.Name (@comp.Alias)</span></a>
-                                    }
+	var allCompIds = AllContentCompositions.Select(n => n.Id);
+	var docTypesInFolders = new GroupingCollection<IContentType>(AllDocTypes);
+	docTypesInFolders.GroupItems<string>(n => ViewHelpers.GetDocTypeFolderPath(n));
 
-                                }
-                            </li>
-                        }
-                    </ol>
-                </p>
-            }
-        }
+	foreach (var group in docTypesInFolders.Groups.OrderBy(g => g.GroupName["Key"]))
+	{
+		//var folderId = Convert.ToInt32(group.GroupName["Key"]);
+		//var folderContainer = Services.DataTypeService.GetContainer(folderId);
+		//var folderName = folderContainer!=null ? folderContainer.Name :"[ROOT]";
 
-        @if (AllMediaTypes != null)
-        {
-            <h3 id="MediaTypes">Edit Data By MediaType</h3>
-            <p>@AllMediaTypes.Count() total MediaTypes</p>
+		var folderName = group.GroupName["Key"];
+		<p>
+			<b>@folderName</b>
+			<ol>
+				@foreach (var doc in group.Collection.OrderBy(n => n.Name))
+				{
+					var matchingContent = AllContentNodes.Where(n => n.ContentTypeId == doc.Id);
+					var qtyContent = matchingContent.Count();
+					var contentBadgeColor = qtyContent == 0 ? "badge-warning" : "badge-info";
+					var comps = doc.ContentTypeComposition;
+					var isComp = allCompIds.Contains(doc.Id);
+					var compInfo = isComp ? " <span class=\"badge badge-dark\">Is Composition</span>" : "";
+					var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", doc.Id.ToString());
+					<li>
+						<a href="@url" target="_blank">@doc.Name</a> (@doc.Alias) @Html.Raw(compInfo)
+						<span tooltip="# of Content Nodes" class="badge badge-pill @contentBadgeColor">@qtyContent</span>
+						@if (comps.Any())
+						{
+							<span>Uses Compositions:</span>
+							foreach (var comp in comps)
+							{
+								var urlComp = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartDocType?DocTypeId={0}", comp.Id.ToString());
+								<a href="@urlComp" target="_blank"><span class="badge badge-secondary">@comp.Name (@comp.Alias)</span></a>
+							}
 
-            var allCompIds = AllMediaCompositions.Select(n => n.Id).ToList();
-            var mediaTypesInFolders = new GroupingCollection<IMediaType>(AllMediaTypes);
-            mediaTypesInFolders.GroupItems<string>(n => ViewHelpers.GetMediaTypeFolderPath(n));
+						}
+					</li>
+				}
+			</ol>
+		</p>
+	}
+}
 
-            foreach (var group in mediaTypesInFolders.Groups.OrderBy(g => g.GroupName["Key"]))
-            {
-                //var folderId = Convert.ToInt32(group.GroupName["Key"]);
-                //var folderContainer = Services.DataTypeService.GetContainer(folderId);
-                //var folderName = folderContainer!=null ? folderContainer.Name :"[ROOT]";
+@if (AllMediaTypes != null)
+{
+	<h3 id="MediaTypes">Edit Data By MediaType</h3>
+	<p>@AllMediaTypes.Count() total MediaTypes</p>
 
-                var folderName = group.GroupName["Key"];
-                <p>
-                    <b>@folderName</b>
-                    <ol>
-                        @foreach (var doc in group.Collection.OrderBy(n => n.Name))
-                        {
-                            var matchingMedia = AllMediaNodes.Where(n => n.ContentTypeId == doc.Id);
-                            var qtyNodes = matchingMedia.Count();
-                            var contentBadgeColor = qtyNodes == 0 ? "badge-warning" : "badge-info";
-                            var comps = doc.ContentTypeComposition;
-                            var isComp = allCompIds.Contains(doc.Id);
-                            var compInfo = isComp ? " <span class=\"badge badge-dark\">Is Composition</span>" : "";
-                            var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartMediaType?MediaTypeId={0}", doc.Id.ToString());
-                            <li>
-                                <a href="@url" target="_blank">@doc.Name</a> (@doc.Alias) @Html.Raw(compInfo)
-                                <span tooltip="# of Media Nodes" class="badge badge-pill @contentBadgeColor">@qtyNodes</span>
-                                @if (comps.Any())
-                                {
-                                    <span>Uses Compositions:</span>
-                                    foreach (var comp in comps)
-                                    {
-                                        var urlComp = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartMediaType?MediaTypeId={0}", comp.Id.ToString());
-                                        <a href="@urlComp" target="_blank"><span class="badge badge-secondary">@comp.Name (@comp.Alias)</span></a>
-                                    }
+	var allCompIds = AllMediaCompositions.Select(n => n.Id).ToList();
+	var mediaTypesInFolders = new GroupingCollection<IMediaType>(AllMediaTypes);
+	mediaTypesInFolders.GroupItems<string>(n => ViewHelpers.GetMediaTypeFolderPath(n));
 
-                                }
-                            </li>
-                        }
-                    </ol>
-                </p>
-            }
-        }
+	foreach (var group in mediaTypesInFolders.Groups.OrderBy(g => g.GroupName["Key"]))
+	{
+		//var folderId = Convert.ToInt32(group.GroupName["Key"]);
+		//var folderContainer = Services.DataTypeService.GetContainer(folderId);
+		//var folderName = folderContainer!=null ? folderContainer.Name :"[ROOT]";
 
-        <h3 id="LegacyData">Store Legacy Data for all Node Types</h3>
-        <p>It is a good idea to store old INT Ids on Content and Media nodes for later reference. You should do this on your original migrated local DB copy - prior to transferring to any staging/live environments (incl. Umbraco Cloud)</p>
-        <ol>
-            <li>First, create a Content Composition and a Media Composition to hold Legacy Data. Add at least a "Label(int)" property to each to store the old (v7) Node Id.</li>
-            <li>Next, Add that Composition to all applicable Content Nodes/Media nodes (other compositions and Nested content types don't need it)</li>
-            <li>Finally, click here to copy the current Node IDs into the Legacy properties.</li>
-        </ol>
+		var folderName = group.GroupName["Key"];
+		<p>
+			<b>@folderName</b>
+			<ol>
+				@foreach (var doc in group.Collection.OrderBy(n => n.Name))
+				{
+					var matchingMedia = AllMediaNodes.Where(n => n.ContentTypeId == doc.Id);
+					var qtyNodes = matchingMedia.Count();
+					var contentBadgeColor = qtyNodes == 0 ? "badge-warning" : "badge-info";
+					var comps = doc.ContentTypeComposition;
+					var isComp = allCompIds.Contains(doc.Id);
+					var compInfo = isComp ? " <span class=\"badge badge-dark\">Is Composition</span>" : "";
+					var url = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartMediaType?MediaTypeId={0}", doc.Id.ToString());
+					<li>
+						<a href="@url" target="_blank">@doc.Name</a> (@doc.Alias) @Html.Raw(compInfo)
+						<span tooltip="# of Media Nodes" class="badge badge-pill @contentBadgeColor">@qtyNodes</span>
+						@if (comps.Any())
+						{
+							<span>Uses Compositions:</span>
+							foreach (var comp in comps)
+							{
+								var urlComp = string.Format("/umbraco/backoffice/Dragonfly/DataEditingTools/StartMediaType?MediaTypeId={0}", comp.Id.ToString());
+								<a href="@urlComp" target="_blank"><span class="badge badge-secondary">@comp.Name (@comp.Alias)</span></a>
+							}
 
-        <div class="d-inline-flex p-2" style="padding: .5em 0;">
-            <a class="btn btn-sm btn-success mr-2" href="/umbraco/backoffice/Dragonfly/DataEditingTools/SetupStoreLegacyData">Store Legacy Data</a>
-        </div>
-        
-        
-        
-        
+						}
+					</li>
+				}
+			</ol>
+		</p>
+	}
+}
 
-        @* <div class="d-inline-flex p-2" style="padding: .5em 0;">
-            <a class="btn btn-sm btn-success mr-2" href="/Umbraco/backoffice/Api/xx/TestDescendantNodesAndSave?StartNode=0">Test Subset of Nodes...</a>
-        </div>*@
+<h3 id="LegacyData">Store Legacy Data for all Node Types</h3>
+<p>It is a good idea to store old INT Ids on Content and Media nodes for later reference. You should do this on your original migrated local DB copy - prior to transferring to any staging/live environments (incl. Umbraco Cloud)</p>
+<ol>
+	<li>First, create a Content Composition and a Media Composition to hold Legacy Data. Add at least a "Label(int)" property to each to store the old (v7) Node Id.</li>
+	<li>Next, Add that Composition to all applicable Content Nodes/Media nodes (other compositions and Nested content types don't need it)</li>
+	<li>Finally, click here to copy the current Node IDs into the Legacy properties.</li>
+</ol>
 
-
-    </div>
-
-    @*@Html.Partial(pvSS, "scripts")*@
-</body>
-</html>
-
+<div class="d-inline-flex p-2" style="padding: .5em 0;">
+	<a class="btn btn-sm btn-success mr-2" href="/umbraco/backoffice/Dragonfly/DataEditingTools/SetupStoreLegacyData">Store Legacy Data</a>
+</div>

@@ -1,167 +1,122 @@
-@inherits UmbracoViewPage<StatusMessage>
+@inherits UmbracoViewPage<PageData<UdiLookupResult>>
 @{
 	Layout = "_Master.cshtml";
 	var status = Model;
+	var lookupResult = Model.DataModel;
 
-	var SpecialMessage = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessage");
-	var SpecialMessageClass = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewDataString(ViewData, "SpecialMessageClass");
-
-	// var SelectedDocType = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "SelectedDocType") as IContentType;
-	var FormInputs = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "FormInputs") as FormInputsUdiLookup;
-	//  var AffectedContentNodesIenum = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "AffectedContentNodes") as IEnumerable<IContent>;
-	var LookupResult = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "LookupResult") as UdiLookupResult;
-
-	// var AffectedContentNodes = AffectedContentNodesIenum.ToList();
-
-	//var propertyAliasesContent = FormInputs.AvailableContentPropertiesCSV.Split(',').ToList();
-	//var propertyAliasesMedia = FormInputs.AvailableMediaPropertiesCSV.Split(',').ToList();
+	var formInputs = Dragonfly.UmbracoHelpers.Mvc.GetSafeViewData(ViewData, "FormInputs") as FormInputsUdiLookup;
 
 	//Column Widths
 	var col1Class = "col-sm-3";
 	var col2Class = "col-sm-9";
 
-	var pvException = ViewHelpers.GetViewsPath() + "Partials/ExceptionDetailsLink.cshtml";
-	var pvSS = ViewHelpers.GetViewsPath() + "Partials/StylesScripts.cshtml";
-	var pvStatus = ViewHelpers.GetViewsPath() + "Partials/StatusMessage.cshtml";
 	var pvForm = ViewHelpers.GetViewsPath() + "Partials/FormUdiLookup.cshtml";
-	//var pvFormReplaceWithUdis = ViewHelpers.GetViewsPath() + "Partials/FormReplaceWithUdis.cshtml";
-
+	
 	var mode = "Setup";
-	if (LookupResult != null)
+	if (lookupResult != null)
 	{
 		mode = "Display";
 	}
 
 }
-<!DOCTYPE html>
-<html>
-<head>
-	@Html.Partial(pvSS, "styles")
-</head>
-<body>
-	<div class="container-fluid">
 
-		<div class="d-inline-flex p-2" style="padding: .5em 0;">
-			<a class="btn btn-sm btn-primary mr-2" href="/umbraco/backoffice/Dragonfly/DataEditingTools/Start">Back to Start</a>
-			@*<a class="btn btn-sm btn-info mr-2" href="@baseUrl">Remove All Filters</a>*@
-			@*<a class="btn btn-sm btn-success mr-2" href="xx">XX</a>*@
-		</div>
+<h2>Udi Lookup</h2>
 
-		<h1>Dragonfly Transformation 7 to 8 Helpers</h1>
-
-		@if (!status.Success)
-		{
-			@Html.Partial(pvStatus, status)
-		}
-		else
-		{
-			if (SpecialMessage != "")
-			{
-				<div class="p-3 mb-2 @SpecialMessageClass">
-					@Html.Raw(SpecialMessage)
-				</div>
-			}
-		}
-
-		<h2>Udi Lookup</h2>
-
-		<div class="card card-default">
-			<h5 class="card-header">Criteria</h5>
-			<div class="card-body">
-				<dl class="row">
-					<dt class="@col1Class">Udi | Guid</dt>
-					<dd class="@col2Class">
-						@if (LookupResult != null)
-						{
-							<span>@LookupResult.LookupCriteria.Udi | @LookupResult.LookupCriteria.Guid</span>
-						}
-						else
-						{
-							<span>@FormInputs.Udi | @FormInputs.Guid</span>
-						}
-					</dd>
-				</dl>
-				<dl class="row">
-					<dt class="@col1Class">Object Type</dt>
-					<dd class="@col2Class">
-						@if (LookupResult != null)
-						{
-							<span>@LookupResult.LookupCriteria.ObjectType</span>
-						}
-						else
-						{
-							<span>@FormInputs.ObjectType</span>
-						}
-
-					</dd>
-				</dl>
-			</div>
-		</div>
-
-		@if (mode != "Setup")
-		{
-			<h5>Lookup Result</h5>
-
-			if (LookupResult != null)
-			{
-				switch (LookupResult.Status)
+<div class="card card-default">
+	<h5 class="card-header">Criteria</h5>
+	<div class="card-body">
+		<dl class="row">
+			<dt class="@col1Class">Udi | Guid</dt>
+			<dd class="@col2Class">
+				@if (lookupResult != null)
 				{
-					case Enums.LookupStatus.NotSearchedYet:
-						<div class="alert alert-info" role="alert">
-							Not yet searched
-						</div>
-						break;
-
-					case Enums.LookupStatus.SearchInProgress:
-						<div class="alert alert-info" role="alert">
-							Search in Progress...
-						</div>
-						break;
-
-					case Enums.LookupStatus.ObjectFound:
-						<div class="alert alert-success" role="alert">
-							<strong> @LookupResult.ObjectTypeDisplayName</strong> : <span> @LookupResult.Name - # @LookupResult.Id</span>
-						</div>
-						break;
-
-					case Enums.LookupStatus.ObjectNotFound:
-						<div class="alert alert-warning" role="alert">
-							<strong>No matching object found of type @LookupResult.ObjectTypeDisplayName with GUID @LookupResult.Guid.ToString()</strong>
-						</div>
-						break;
-
-					case Enums.LookupStatus.Error:
-						<div class="alert alert-danger" role="alert">
-							<strong>Error</strong> : <span>@LookupResult.ErrorMsg</span>
-						</div>
-						break;
-
-					case Enums.LookupStatus.ObjectTypeNotSupported:
-						<div class="alert alert-warning" role="alert">
-							<strong>@Html.Raw(LookupResult.ErrorMsg)</strong>
-						</div>
-						break;
-
-					default:
-						throw new ArgumentOutOfRangeException();
+					<span>@lookupResult.LookupCriteria.Udi | @lookupResult.LookupCriteria.Guid</span>
+				}
+				else
+				{
+					<span>@formInputs.Udi | @formInputs.Guid</span>
+				}
+			</dd>
+		</dl>
+		<dl class="row">
+			<dt class="@col1Class">Object Type</dt>
+			<dd class="@col2Class">
+				@if (lookupResult != null)
+				{
+					<span>@lookupResult.LookupCriteria.ObjectType</span>
+				}
+				else
+				{
+					<span>@formInputs.ObjectType</span>
 				}
 
-			}
-			else
-			{
-				<div class="alert alert-danger" role="alert">
-					Something went wrong - Lookup Result is missing data
+			</dd>
+		</dl>
+	</div>
+</div>
+
+@if (mode != "Setup")
+{
+	<h5>Lookup Result</h5>
+
+	if (lookupResult != null)
+	{
+		switch (lookupResult.Status)
+		{
+			case Enums.LookupStatus.NotSearchedYet:
+				<div class="alert alert-info" role="alert">
+					Not yet searched
 				</div>
-			}
+				break;
+
+			case Enums.LookupStatus.SearchInProgress:
+				<div class="alert alert-info" role="alert">
+					Search in Progress...
+				</div>
+				break;
+
+			case Enums.LookupStatus.ObjectFound:
+				<div class="alert alert-success" role="alert">
+					<strong> @lookupResult.ObjectTypeDisplayName</strong> : <span> @lookupResult.Name - # @lookupResult.Id</span>
+				</div>
+				break;
+
+			case Enums.LookupStatus.ObjectNotFound:
+				<div class="alert alert-warning" role="alert">
+					<strong>No matching object found of type @lookupResult.ObjectTypeDisplayName with GUID @lookupResult.Guid.ToString()</strong>
+				</div>
+				break;
+
+			case Enums.LookupStatus.Error:
+				<div class="alert alert-danger" role="alert">
+					<strong>Error</strong> : <span>@lookupResult.ErrorMsg</span>
+				</div>
+				break;
+
+			case Enums.LookupStatus.ObjectTypeNotSupported:
+				<div class="alert alert-warning" role="alert">
+					<strong>@Html.Raw(lookupResult.ErrorMsg)</strong>
+				</div>
+				break;
+
+			default:
+				throw new ArgumentOutOfRangeException();
 		}
 
-		@Html.Partial(pvForm, FormInputs)
+	}
+	else
+	{
+		<div class="alert alert-danger" role="alert">
+			Something went wrong - Lookup Result is missing data
+		</div>
+	}
+}
 
-	</div>
+@await Html.PartialAsync(pvForm, formInputs)
 
-	@Html.Partial(pvSS, "scripts")
 
-	@*<script type="text/javascript">
+@*	@section FooterScripts {
+	<script type="text/javascript">
 	$(document).ready(function () {
 
 	// Setup - add a text input to each footer cell
@@ -188,6 +143,5 @@
 	});
 
 	});
-	</script>*@
-</body>
-</html>
+	</script>}*@
+
