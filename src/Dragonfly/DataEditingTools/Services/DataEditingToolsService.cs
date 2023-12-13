@@ -22,8 +22,7 @@ using Umbraco.Cms.Web.Common;
 using Umbraco.Cms.Web.Common.UmbracoContext;
 
 using Umbraco.Extensions;
-using StackExchange.Profiling;
-using Dragonfly.DataEditingTools.Helpers;
+
 
 
 public class DataEditingToolsService
@@ -34,6 +33,8 @@ public class DataEditingToolsService
     #region CTOR & DI
 
     private readonly ILogger<DataEditingToolsService> _logger;
+    private readonly IServiceProvider _Provider;
+
     private readonly IConfiguration _AppSettingsConfig;
     private readonly IWebHostEnvironment _HostingEnvironment;
 
@@ -45,10 +46,12 @@ public class DataEditingToolsService
 
     public DataEditingToolsService(
             ILogger<DataEditingToolsService> logger,
+            IServiceProvider provider,
             DependencyLoader Dependencies
             )
     {
         _logger = logger;
+         _Provider= provider;
         _AppSettingsConfig = Dependencies.AppSettingsConfig;
         _HostingEnvironment = Dependencies.HostingEnvironment;
         _services = Dependencies.Services;
@@ -820,7 +823,7 @@ public class DataEditingToolsService
             return resultSet;
         }
 
-        ICustomPropToPropDataTransformer customTransformer = AssemblyHelpers.GetAssemblyTypeInstance(FormInputs.CustomTransformationClass, _HostingEnvironment) as ICustomPropToPropDataTransformer;
+        ICustomPropToPropDataTransformer? customTransformer = ReflectionHelper.GetAssemblyTypeInstance(_Provider,FormInputs.CustomTransformationClass) as ICustomPropToPropDataTransformer;
 
         if (customTransformer == null)
         {
@@ -940,7 +943,7 @@ public class DataEditingToolsService
             return resultSet;
         }
 
-        ICustomFindReplaceTransformer customTransformer = AssemblyHelpers.GetAssemblyTypeInstance(FormInputs.CustomTransformationClass, _HostingEnvironment) as ICustomFindReplaceTransformer;
+        ICustomFindReplaceTransformer? customTransformer = ReflectionHelper.GetAssemblyTypeInstance(_Provider,FormInputs.CustomTransformationClass) as ICustomFindReplaceTransformer;
 
         if (customTransformer == null)
         {
