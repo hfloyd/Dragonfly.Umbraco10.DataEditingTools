@@ -1,5 +1,5 @@
 # Dragonfly.Umbraco10.DataEditingTools #
-Data cleaning/conversion tools for Umbraco 10+ created by [Heather Floyd](https://www.HeatherFloyd.com). (Based on original code in  "Dragonfly.DataEditingTools")
+Data cleaning/conversion tools for Umbraco 10+ created by [Heather Floyd](https://www.HeatherFloyd.com). (Based on original code in  "Dragonfly.Migration7To8Helpers")
 
 # Installation #
 Via NuGet:
