@@ -23,7 +23,7 @@ namespace Dragonfly.DataEditingTools
             builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddScoped<IViewRenderService, Dragonfly.NetHelperServices.ViewRenderService>();
-            builder.Services.AddScoped<Dragonfly.UmbracoServices.FileHelperService>();
+            builder.Services.AddScoped<Dragonfly.NetHelperServices.FileHelperService>();
 
             builder.Services.AddScoped<DependencyLoader>();
             builder.Services.AddScoped<Dragonfly.DataEditingTools.DataEditingToolsService>();
